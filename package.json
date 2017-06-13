@@ -1,6 +1,6 @@
 {
   "name": "@reactioncommerce/nodemailer",
-  "version": "5.0.4",
+  "version": "5.0.5",
   "description": "Easy e-mail sending from your Node.js applications",
   "main": "dist/nodemailer.js",
   "scripts": {

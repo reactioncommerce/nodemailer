@@ -1,10 +1,13 @@
+.github
+.circleci
+
 assets
 examples
+node_modules
 src
 test
+
+.babelrc
+.editorconfig
 .eslintrc
 .gitignore
-.travis.yml
-CONTRIBUTING.md
-Gruntfile.js
-ISSUE_TEMPLATE.md
