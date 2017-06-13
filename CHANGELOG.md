@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v5.0.0
+
+- Official Reaction Commerce fork begins
+- update build tooling to current Reaction Commerce preferences
+- compile project with Babel so the Node >=6 limitation could be removed
+
 ## v4.0.1 2017-04-13
 
 - Fixed issue with LMTP and STARTTLS
