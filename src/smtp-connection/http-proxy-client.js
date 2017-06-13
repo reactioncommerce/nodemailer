@@ -1,4 +1,4 @@
-'use strict';
+
 
 /**
  * Minimal HTTP/S proxy client
@@ -21,56 +21,56 @@ const urllib = require('url');
  * @param {Function} callback Callback to run with the rocket object once connection is established
  */
 function httpProxyClient(proxyUrl, destinationPort, destinationHost, callback) {
-    let proxy = urllib.parse(proxyUrl);
+  const proxy = urllib.parse(proxyUrl);
 
     // create a socket connection to the proxy server
-    let options;
-    let connect;
-    let socket;
+  let options;
+  let connect;
+  let socket;
 
-    options = {
-        host: proxy.hostname,
-        port: Number(proxy.port) ? Number(proxy.port) : (proxy.protocol === 'https:' ? 443 : 80)
-    };
+  options = {
+    host: proxy.hostname,
+    port: Number(proxy.port) ? Number(proxy.port) : (proxy.protocol === 'https:' ? 443 : 80)
+  };
 
-    if (proxy.protocol === 'https:') {
+  if (proxy.protocol === 'https:') {
         // we can use untrusted proxies as long as we verify actual SMTP certificates
-        options.rejectUnauthorized = false;
-        connect = tls.connect.bind(tls);
-    } else {
-        connect = net.connect.bind(net);
-    }
+    options.rejectUnauthorized = false;
+    connect = tls.connect.bind(tls);
+  } else {
+    connect = net.connect.bind(net);
+  }
 
     // Error harness for initial connection. Once connection is established, the responsibility
     // to handle errors is passed to whoever uses this socket
-    let finished = false;
-    let tempSocketErr = function (err) {
-        if (finished) {
-            return;
-        }
-        finished = true;
-        try {
-            socket.destroy();
-        } catch (E) {
+  let finished = false;
+  const tempSocketErr = function (err) {
+    if (finished) {
+      return;
+    }
+    finished = true;
+    try {
+      socket.destroy();
+    } catch (E) {
             // ignore
-        }
-        callback(err);
+    }
+    callback(err);
+  };
+
+  socket = connect(options, () => {
+    if (finished) {
+      return;
+    }
+
+    const reqHeaders = {
+      Host: destinationHost + ':' + destinationPort,
+      Connection: 'close'
     };
+    if (proxy.auth) {
+      reqHeaders['Proxy-Authorization'] = 'Basic ' + new Buffer(proxy.auth).toString('base64');
+    }
 
-    socket = connect(options, () => {
-        if (finished) {
-            return;
-        }
-
-        let reqHeaders = {
-            Host: destinationHost + ':' + destinationPort,
-            Connection: 'close'
-        };
-        if (proxy.auth) {
-            reqHeaders['Proxy-Authorization'] = 'Basic ' + new Buffer(proxy.auth).toString('base64');
-        }
-
-        socket.write(
+    socket.write(
             // HTTP method
             'CONNECT ' + destinationHost + ':' + destinationPort + ' HTTP/1.1\r\n' +
 
@@ -80,47 +80,47 @@ function httpProxyClient(proxyUrl, destinationPort, destinationHost, callback) {
             // End request
             '\r\n\r\n');
 
-        let headers = '';
-        let onSocketData = chunk => {
-            let match;
-            let remainder;
+    let headers = '';
+    const onSocketData = chunk => {
+      let match;
+      let remainder;
 
-            if (finished) {
-                return;
-            }
+      if (finished) {
+        return;
+      }
 
-            headers += chunk.toString('binary');
-            if ((match = headers.match(/\r\n\r\n/))) {
-                socket.removeListener('data', onSocketData);
+      headers += chunk.toString('binary');
+      if ((match = headers.match(/\r\n\r\n/))) {
+        socket.removeListener('data', onSocketData);
 
-                remainder = headers.substr(match.index + match[0].length);
-                headers = headers.substr(0, match.index);
-                if (remainder) {
-                    socket.unshift(new Buffer(remainder, 'binary'));
-                }
+        remainder = headers.substr(match.index + match[0].length);
+        headers = headers.substr(0, match.index);
+        if (remainder) {
+          socket.unshift(new Buffer(remainder, 'binary'));
+        }
 
                 // proxy connection is now established
-                finished = true;
+        finished = true;
 
                 // check response code
-                match = headers.match(/^HTTP\/\d+\.\d+ (\d+)/i);
-                if (!match || (match[1] || '').charAt(0) !== '2') {
-                    try {
-                        socket.destroy();
-                    } catch (E) {
+        match = headers.match(/^HTTP\/\d+\.\d+ (\d+)/i);
+        if (!match || (match[1] || '').charAt(0) !== '2') {
+          try {
+            socket.destroy();
+          } catch (E) {
                         // ignore
-                    }
-                    return callback(new Error('Invalid response from proxy' + (match && ': ' + match[1] || '')));
-                }
+          }
+          return callback(new Error('Invalid response from proxy' + (match && ': ' + match[1] || '')));
+        }
 
-                socket.removeListener('error', tempSocketErr);
-                return callback(null, socket);
-            }
-        };
-        socket.on('data', onSocketData);
-    });
+        socket.removeListener('error', tempSocketErr);
+        return callback(null, socket);
+      }
+    };
+    socket.on('data', onSocketData);
+  });
 
-    socket.once('error', tempSocketErr);
+  socket.once('error', tempSocketErr);
 }
 
 module.exports = httpProxyClient;

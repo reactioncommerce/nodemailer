@@ -1,7 +1,6 @@
 /* eslint no-unused-expressions:0, prefer-arrow-callback: 0 */
 /* globals beforeEach, describe, it */
 
-'use strict';
 
 const chai = require('chai');
 const expect = chai.expect;
@@ -37,8 +36,8 @@ RpgHY4V0qSCdUt4rD32nwfjlGbh8p5ua5wIDAQAB
 describe('DKIM Tests', function () {
     this.timeout(100 * 1000); // eslint-disable-line
 
-    it('should sign message', function (done) {
-        let message =
+  it('should sign message', function (done) {
+    const message =
             `From: saatja aadress
 To: Saaja aadress
 Subject: pealkiri
@@ -49,38 +48,38 @@ Message-Id: test
 tere tere
 teine rida
 `;
-        let s = new PassThrough();
-        let dkim = new DKIM({
-            domainName: 'node.ee',
-            keySelector: 'dkim',
-            privateKey
-        });
+    const s = new PassThrough();
+    const dkim = new DKIM({
+      domainName: 'node.ee',
+      keySelector: 'dkim',
+      privateKey
+    });
 
-        let output = dkim.sign(s);
+    const output = dkim.sign(s);
 
-        let chunks = [];
+    const chunks = [];
 
-        let reading = false;
-        let readNext = () => {
-            let chunk = output.read(10 * 1024);
-            if (chunk === null) {
-                reading = false;
-                return;
-            }
-            reading = true;
-            chunks.push(chunk);
-            setImmediate(readNext);
-        };
+    let reading = false;
+    const readNext = () => {
+      const chunk = output.read(10 * 1024);
+      if (chunk === null) {
+        reading = false;
+        return;
+      }
+      reading = true;
+      chunks.push(chunk);
+      setImmediate(readNext);
+    };
 
-        output.on('readable', () => {
-            if (!reading) {
-                readNext();
-            }
-        });
+    output.on('readable', () => {
+      if (!reading) {
+        readNext();
+      }
+    });
 
-        output.on('end', () => {
-            let message = Buffer.concat(chunks).toString();
-            expect(message).to.equal('DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=node.ee; q=dns/txt;\r\n' +
+    output.on('end', () => {
+      const message = Buffer.concat(chunks).toString();
+      expect(message).to.equal('DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=node.ee; q=dns/txt;\r\n' +
                 ' s=dkim; bh=h2JdEKA6yVYSGuI3DQCDlg2KL+96GxA7Yw7owvsYDUM=;\r\n' +
                 ' h=from:subject:message-id:to;\r\n' +
                 ' b=tey8mL2VQVuy/phh7yEKi86Y0Yyzyy04qTy73G4yg3qdEDB7uymjNr32ruRPVFmC9PimIK75p\r\n' +
@@ -94,204 +93,204 @@ teine rida
                 '\n' +
                 'tere tere\n' +
                 'teine rida\n');
-            done();
-        });
-
-        let inputPos = 0;
-        let messageBuf = Buffer.from(message);
-        let writeNext = () => {
-            if (inputPos >= messageBuf.length) {
-                return s.end();
-            }
-            s.write(Buffer.from([messageBuf[inputPos++]]));
-            setImmediate(writeNext);
-        };
-        writeNext();
+      done();
     });
 
-    it('should sign large message using cache dir', function (done) {
-        let dkim = new DKIM({
-            domainName: 'node.ee',
-            keySelector: 'dkim',
-            privateKey,
-            cacheDir: path.join(__dirname, 'cache')
-        });
+    let inputPos = 0;
+    const messageBuf = Buffer.from(message);
+    const writeNext = () => {
+      if (inputPos >= messageBuf.length) {
+        return s.end();
+      }
+      s.write(Buffer.from([messageBuf[inputPos++]]));
+      setImmediate(writeNext);
+    };
+    writeNext();
+  });
 
-        let output = dkim.sign(fs.createReadStream(__dirname + '/fixtures/large.eml'));
-        output.on('error', err => {
-            expect(err).to.not.exist;
-            done();
-        });
-
-        let chunks = [];
-
-        let reading = false;
-        let readNext = () => {
-            let chunk = output.read();
-            if (chunk === null) {
-                reading = false;
-                return;
-            }
-            reading = true;
-            chunks.push(chunk);
-            setImmediate(readNext);
-        };
-
-        output.on('readable', () => {
-            if (!reading) {
-                readNext();
-            }
-        });
-
-        output.on('end', () => {
-            let message = Buffer.concat(chunks).toString();
-            expect(message.indexOf('bh=ST+2Z7mCDd8CPa6pWbCWnFBLKyl8/I5d0JCaEQub550=')).is.gte(0);
-            expect(crypto.createHash('md5').update(Buffer.from(message.substr(message.indexOf('X-Zone-Loop')))).digest('hex')).to.equal('16078d67ecb4c9954f2568b3bd20e8b5');
-            expect(output.usingCache).to.be.true;
-            done();
-        });
+  it('should sign large message using cache dir', function (done) {
+    const dkim = new DKIM({
+      domainName: 'node.ee',
+      keySelector: 'dkim',
+      privateKey,
+      cacheDir: path.join(__dirname, 'cache')
     });
 
-    it('should sign large message without cache dir', function (done) {
-        let dkim = new DKIM({
-            domainName: 'node.ee',
-            keySelector: 'dkim',
-            privateKey
-        });
-
-        let output = dkim.sign(fs.createReadStream(__dirname + '/fixtures/large.eml'));
-        output.on('error', err => {
-            expect(err).to.not.exist;
-            done();
-        });
-
-        let chunks = [];
-
-        let reading = false;
-        let readNext = () => {
-            let chunk = output.read();
-            if (chunk === null) {
-                reading = false;
-                return;
-            }
-            reading = true;
-            chunks.push(chunk);
-            setImmediate(readNext);
-        };
-
-        output.on('readable', () => {
-            if (!reading) {
-                readNext();
-            }
-        });
-
-        output.on('end', () => {
-            let message = Buffer.concat(chunks).toString();
-            expect(message.indexOf('bh=ST+2Z7mCDd8CPa6pWbCWnFBLKyl8/I5d0JCaEQub550=')).is.gte(0);
-            expect(crypto.createHash('md5').update(Buffer.from(message.substr(message.indexOf('X-Zone-Loop')))).digest('hex')).to.equal('16078d67ecb4c9954f2568b3bd20e8b5');
-            expect(output.usingCache).to.be.false;
-            done();
-        });
+    const output = dkim.sign(fs.createReadStream(__dirname + '/fixtures/large.eml'));
+    output.on('error', err => {
+      expect(err).to.not.exist;
+      done();
     });
 
-    it('should emit cache error', function (done) {
-        let dkim = new DKIM({
-            domainName: 'node.ee',
-            keySelector: 'dkim',
-            privateKey,
-            cacheDir: '/rootertewywrtyreetwert' // expecting that this location does not exist or is unwritable
-        });
+    const chunks = [];
 
-        let output = dkim.sign(fs.createReadStream(__dirname + '/fixtures/large.eml'));
-        output.on('error', err => {
-            expect(err).to.exist;
-            done();
-        });
+    let reading = false;
+    const readNext = () => {
+      const chunk = output.read();
+      if (chunk === null) {
+        reading = false;
+        return;
+      }
+      reading = true;
+      chunks.push(chunk);
+      setImmediate(readNext);
+    };
+
+    output.on('readable', () => {
+      if (!reading) {
+        readNext();
+      }
     });
 
-    it('should sign large message as Buffer', function (done) {
-        let dkim = new DKIM({
-            domainName: 'node.ee',
-            keySelector: 'dkim',
-            privateKey,
-            cacheDir: path.join(__dirname, 'cache')
-        });
+    output.on('end', () => {
+      const message = Buffer.concat(chunks).toString();
+      expect(message.indexOf('bh=ST+2Z7mCDd8CPa6pWbCWnFBLKyl8/I5d0JCaEQub550=')).is.gte(0);
+      expect(crypto.createHash('md5').update(Buffer.from(message.substr(message.indexOf('X-Zone-Loop')))).digest('hex')).to.equal('16078d67ecb4c9954f2568b3bd20e8b5');
+      expect(output.usingCache).to.be.true;
+      done();
+    });
+  });
 
-        let output = dkim.sign(fs.readFileSync(__dirname + '/fixtures/large.eml'));
-        output.on('error', err => {
-            expect(err).to.not.exist;
-            done();
-        });
-
-        let chunks = [];
-
-        let reading = false;
-        let readNext = () => {
-            let chunk = output.read();
-            if (chunk === null) {
-                reading = false;
-                return;
-            }
-            reading = true;
-            chunks.push(chunk);
-            setImmediate(readNext);
-        };
-
-        output.on('readable', () => {
-            if (!reading) {
-                readNext();
-            }
-        });
-
-        output.on('end', () => {
-            let message = Buffer.concat(chunks).toString();
-            expect(message.indexOf('bh=ST+2Z7mCDd8CPa6pWbCWnFBLKyl8/I5d0JCaEQub550=')).is.gte(0);
-            expect(crypto.createHash('md5').update(Buffer.from(message.substr(message.indexOf('X-Zone-Loop')))).digest('hex')).to.equal('16078d67ecb4c9954f2568b3bd20e8b5');
-            expect(output.usingCache).to.be.true;
-            done();
-        });
+  it('should sign large message without cache dir', function (done) {
+    const dkim = new DKIM({
+      domainName: 'node.ee',
+      keySelector: 'dkim',
+      privateKey
     });
 
-    it('should sign large message as String', function (done) {
-        let dkim = new DKIM({
-            domainName: 'node.ee',
-            keySelector: 'dkim',
-            privateKey,
-            cacheDir: path.join(__dirname, 'cache')
-        });
-
-        let output = dkim.sign(fs.readFileSync(__dirname + '/fixtures/large.eml', 'utf-8'));
-        output.on('error', err => {
-            expect(err).to.not.exist;
-            done();
-        });
-
-        let chunks = [];
-
-        let reading = false;
-        let readNext = () => {
-            let chunk = output.read();
-            if (chunk === null) {
-                reading = false;
-                return;
-            }
-            reading = true;
-            chunks.push(chunk);
-            setImmediate(readNext);
-        };
-
-        output.on('readable', () => {
-            if (!reading) {
-                readNext();
-            }
-        });
-
-        output.on('end', () => {
-            let message = Buffer.concat(chunks).toString();
-            expect(message.indexOf('bh=ST+2Z7mCDd8CPa6pWbCWnFBLKyl8/I5d0JCaEQub550=')).is.gte(0);
-            expect(crypto.createHash('md5').update(Buffer.from(message.substr(message.indexOf('X-Zone-Loop')))).digest('hex')).to.equal('16078d67ecb4c9954f2568b3bd20e8b5');
-            expect(output.usingCache).to.be.true;
-            done();
-        });
+    const output = dkim.sign(fs.createReadStream(__dirname + '/fixtures/large.eml'));
+    output.on('error', err => {
+      expect(err).to.not.exist;
+      done();
     });
+
+    const chunks = [];
+
+    let reading = false;
+    const readNext = () => {
+      const chunk = output.read();
+      if (chunk === null) {
+        reading = false;
+        return;
+      }
+      reading = true;
+      chunks.push(chunk);
+      setImmediate(readNext);
+    };
+
+    output.on('readable', () => {
+      if (!reading) {
+        readNext();
+      }
+    });
+
+    output.on('end', () => {
+      const message = Buffer.concat(chunks).toString();
+      expect(message.indexOf('bh=ST+2Z7mCDd8CPa6pWbCWnFBLKyl8/I5d0JCaEQub550=')).is.gte(0);
+      expect(crypto.createHash('md5').update(Buffer.from(message.substr(message.indexOf('X-Zone-Loop')))).digest('hex')).to.equal('16078d67ecb4c9954f2568b3bd20e8b5');
+      expect(output.usingCache).to.be.false;
+      done();
+    });
+  });
+
+  it('should emit cache error', function (done) {
+    const dkim = new DKIM({
+      domainName: 'node.ee',
+      keySelector: 'dkim',
+      privateKey,
+      cacheDir: '/rootertewywrtyreetwert' // expecting that this location does not exist or is unwritable
+    });
+
+    const output = dkim.sign(fs.createReadStream(__dirname + '/fixtures/large.eml'));
+    output.on('error', err => {
+      expect(err).to.exist;
+      done();
+    });
+  });
+
+  it('should sign large message as Buffer', function (done) {
+    const dkim = new DKIM({
+      domainName: 'node.ee',
+      keySelector: 'dkim',
+      privateKey,
+      cacheDir: path.join(__dirname, 'cache')
+    });
+
+    const output = dkim.sign(fs.readFileSync(__dirname + '/fixtures/large.eml'));
+    output.on('error', err => {
+      expect(err).to.not.exist;
+      done();
+    });
+
+    const chunks = [];
+
+    let reading = false;
+    const readNext = () => {
+      const chunk = output.read();
+      if (chunk === null) {
+        reading = false;
+        return;
+      }
+      reading = true;
+      chunks.push(chunk);
+      setImmediate(readNext);
+    };
+
+    output.on('readable', () => {
+      if (!reading) {
+        readNext();
+      }
+    });
+
+    output.on('end', () => {
+      const message = Buffer.concat(chunks).toString();
+      expect(message.indexOf('bh=ST+2Z7mCDd8CPa6pWbCWnFBLKyl8/I5d0JCaEQub550=')).is.gte(0);
+      expect(crypto.createHash('md5').update(Buffer.from(message.substr(message.indexOf('X-Zone-Loop')))).digest('hex')).to.equal('16078d67ecb4c9954f2568b3bd20e8b5');
+      expect(output.usingCache).to.be.true;
+      done();
+    });
+  });
+
+  it('should sign large message as String', function (done) {
+    const dkim = new DKIM({
+      domainName: 'node.ee',
+      keySelector: 'dkim',
+      privateKey,
+      cacheDir: path.join(__dirname, 'cache')
+    });
+
+    const output = dkim.sign(fs.readFileSync(__dirname + '/fixtures/large.eml', 'utf-8'));
+    output.on('error', err => {
+      expect(err).to.not.exist;
+      done();
+    });
+
+    const chunks = [];
+
+    let reading = false;
+    const readNext = () => {
+      const chunk = output.read();
+      if (chunk === null) {
+        reading = false;
+        return;
+      }
+      reading = true;
+      chunks.push(chunk);
+      setImmediate(readNext);
+    };
+
+    output.on('readable', () => {
+      if (!reading) {
+        readNext();
+      }
+    });
+
+    output.on('end', () => {
+      const message = Buffer.concat(chunks).toString();
+      expect(message.indexOf('bh=ST+2Z7mCDd8CPa6pWbCWnFBLKyl8/I5d0JCaEQub550=')).is.gte(0);
+      expect(crypto.createHash('md5').update(Buffer.from(message.substr(message.indexOf('X-Zone-Loop')))).digest('hex')).to.equal('16078d67ecb4c9954f2568b3bd20e8b5');
+      expect(output.usingCache).to.be.true;
+      done();
+    });
+  });
 });
