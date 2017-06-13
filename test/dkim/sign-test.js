@@ -1,12 +1,11 @@
 /* eslint no-unused-expressions:0, prefer-arrow-callback: 0 */
 /* globals beforeEach, describe, it */
 
-'use strict';
 
 const chai = require('chai');
 const expect = chai.expect;
 
-let sign = require('../../dist/dkim/sign');
+const sign = require('../../dist/dkim/sign');
 
 chai.config.includeStack = true;
 
@@ -32,75 +31,75 @@ RpgHY4V0qSCdUt4rD32nwfjlGbh8p5ua5wIDAQAB
 */
 
 describe('DKIM Sign Tests', function () {
-    it('should create relaxed headers', function () {
-        let headerLines = [{
-            key: 'a',
-            line: 'A: X'
-        }, {
-            key: 'b',
-            line: 'B: Y\t\r\n\tZ  '
-        }];
-        expect(sign.relaxedHeaders(headerLines, 'a:b:c:d')).to.deep.equal({
-            headers: 'a:X\r\nb:Y Z\r\n',
-            fieldNames: 'a:b'
-        });
+  it('should create relaxed headers', function () {
+    const headerLines = [{
+      key: 'a',
+      line: 'A: X'
+    }, {
+      key: 'b',
+      line: 'B: Y\t\r\n\tZ  '
+    }];
+    expect(sign.relaxedHeaders(headerLines, 'a:b:c:d')).to.deep.equal({
+      headers: 'a:X\r\nb:Y Z\r\n',
+      fieldNames: 'a:b'
     });
+  });
 
-    it('should skip specific headers', function () {
-        let headerLines = [{
-            key: 'a',
-            line: 'A: X'
-        }, {
-            key: 'b',
-            line: 'B: Y\t\r\n\tZ  '
-        }, {
-            key: 'c',
-            line: 'C: X'
-        }, {
-            key: 'd',
-            line: 'D: X'
-        }];
-        expect(sign.relaxedHeaders(headerLines, 'a:b:c:d', 'a:c')).to.deep.equal({
-            headers: 'b:Y Z\r\nd:X\r\n',
-            fieldNames: 'b:d'
-        });
+  it('should skip specific headers', function () {
+    const headerLines = [{
+      key: 'a',
+      line: 'A: X'
+    }, {
+      key: 'b',
+      line: 'B: Y\t\r\n\tZ  '
+    }, {
+      key: 'c',
+      line: 'C: X'
+    }, {
+      key: 'd',
+      line: 'D: X'
+    }];
+    expect(sign.relaxedHeaders(headerLines, 'a:b:c:d', 'a:c')).to.deep.equal({
+      headers: 'b:Y Z\r\nd:X\r\n',
+      fieldNames: 'b:d'
     });
+  });
 
-    it('should sign headers', function () {
-        let headerLines = [{
-            key: 'from',
-            line: 'From: andris@node.ee'
-        }, {
-            key: 'to',
-            line: 'To:andris@kreata.ee'
-        }, {
-            key: 'message-id',
-            line: 'Message-ID: <testkiri@kreata.ee>'
-        }];
+  it('should sign headers', function () {
+    const headerLines = [{
+      key: 'from',
+      line: 'From: andris@node.ee'
+    }, {
+      key: 'to',
+      line: 'To:andris@kreata.ee'
+    }, {
+      key: 'message-id',
+      line: 'Message-ID: <testkiri@kreata.ee>'
+    }];
 
-        let dkimField = sign(headerLines, 'sha256', 'z6TUz85EdYrACGMHYgZhJGvVy5oQI0dooVMKa2ZT7c4=', {
-            skipFields: 'message-id:references',
-            domainName: 'node.ee',
-            keySelector: 'dkim',
-            privateKey
-        });
-        expect(dkimField.replace(/\r?\n\s*/g, '').replace(/\s+/g, '')).to.equal('DKIM-Signature:v=1;a=rsa-sha256;c=relaxed/relaxed;d=node.ee;q=dns/txt;s=dkim;bh=z6TUz85EdYrACGMHYgZhJGvVy5oQI0dooVMKa2ZT7c4=;h=from:to;b=pVd+Dp+EjmYBcc1AWlBAP4ESpuAJ2WMS4gbxWLoeUZ1vZRodVN7K9UXvcCsLuqjJktCZMN2+8dyEUaYW2VIcxg4sVBCS1wqB/tqYZ/gxXLnG2/nZf4fyD2vxltJP4pDL');
+    const dkimField = sign(headerLines, 'sha256', 'z6TUz85EdYrACGMHYgZhJGvVy5oQI0dooVMKa2ZT7c4=', {
+      skipFields: 'message-id:references',
+      domainName: 'node.ee',
+      keySelector: 'dkim',
+      privateKey
     });
+    expect(dkimField.replace(/\r?\n\s*/g, '').replace(/\s+/g, '')).to.equal('DKIM-Signature:v=1;a=rsa-sha256;c=relaxed/relaxed;d=node.ee;q=dns/txt;s=dkim;bh=z6TUz85EdYrACGMHYgZhJGvVy5oQI0dooVMKa2ZT7c4=;h=from:to;b=pVd+Dp+EjmYBcc1AWlBAP4ESpuAJ2WMS4gbxWLoeUZ1vZRodVN7K9UXvcCsLuqjJktCZMN2+8dyEUaYW2VIcxg4sVBCS1wqB/tqYZ/gxXLnG2/nZf4fyD2vxltJP4pDL');
+  });
 
-    it('should sign headers for unicode domain', function () {
-        let headerLines = [{
-            key: 'from',
-            line: 'From: andris@node.ee'
-        }, {
-            key: 'to',
-            line: 'To:andris@kreata.ee'
-        }];
+  it('should sign headers for unicode domain', function () {
+    const headerLines = [{
+      key: 'from',
+      line: 'From: andris@node.ee'
+    }, {
+      key: 'to',
+      line: 'To:andris@kreata.ee'
+    }];
 
-        let dkimField = sign(headerLines, 'sha256', 'z6TUz85EdYrACGMHYgZhJGvVy5oQI0dooVMKa2ZT7c4=', {
-            domainName: 'müriaad-polüteism.info',
-            keySelector: 'dkim',
-            privateKey
-        });
-        expect(dkimField.replace(/\r?\n\s*/g, '').replace(/\s+/g, '')).to.equal('DKIM-Signature:v=1;a=rsa-sha256;c=relaxed/relaxed;d=xn--mriaad-polteism-zvbj.info;q=dns/txt;s=dkim;bh=z6TUz85EdYrACGMHYgZhJGvVy5oQI0dooVMKa2ZT7c4=;h=from:to;b=oBJ1MkwEkftfXa2AK4Expjp2xgIcAR43SVrftSEHVQ6F1SlGjP3EKP+cn/hLkhUel3rY0icthk/myDu6uhTBmM6DMtzIBW/7uQd6q9hfgaiYnw5Iew2tZc4TzBEYSdKi');
+    const dkimField = sign(headerLines, 'sha256', 'z6TUz85EdYrACGMHYgZhJGvVy5oQI0dooVMKa2ZT7c4=', {
+      domainName: 'müriaad-polüteism.info',
+      keySelector: 'dkim',
+      privateKey
     });
+    expect(dkimField.replace(/\r?\n\s*/g, '').replace(/\s+/g, '')).to.equal('DKIM-Signature:v=1;a=rsa-sha256;c=relaxed/relaxed;d=xn--mriaad-polteism-zvbj.info;q=dns/txt;s=dkim;bh=z6TUz85EdYrACGMHYgZhJGvVy5oQI0dooVMKa2ZT7c4=;h=from:to;b=oBJ1MkwEkftfXa2AK4Expjp2xgIcAR43SVrftSEHVQ6F1SlGjP3EKP+cn/hLkhUel3rY0icthk/myDu6uhTBmM6DMtzIBW/7uQd6q9hfgaiYnw5Iew2tZc4TzBEYSdKi');
+  });
 });

@@ -1,7 +1,6 @@
 /* eslint no-unused-expressions:0, prefer-arrow-callback: 0 */
 /* globals beforeEach, describe, it */
 
-'use strict';
 
 const chai = require('chai');
 const sinon = require('sinon');
@@ -15,206 +14,206 @@ const expect = chai.expect;
 chai.config.includeStack = true;
 
 describe('MimeNode Tests', function () {
-    it('should create MimeNode object', function () {
-        expect(new MimeNode()).to.exist;
+  it('should create MimeNode object', function () {
+    expect(new MimeNode()).to.exist;
+  });
+
+  describe('#createChild', function () {
+    it('should create child', function () {
+      const mb = new MimeNode('multipart/mixed');
+
+      const child = mb.createChild('multipart/mixed');
+      expect(child.parentNode).to.equal(mb);
+      expect(child.rootNode).to.equal(mb);
+
+      const subchild1 = child.createChild('text/html');
+      expect(subchild1.parentNode).to.equal(child);
+      expect(subchild1.rootNode).to.equal(mb);
+
+      const subchild2 = child.createChild('text/html');
+      expect(subchild2.parentNode).to.equal(child);
+      expect(subchild2.rootNode).to.equal(mb);
+    });
+  });
+
+  describe('#appendChild', function () {
+    it('should append child node', function () {
+      const mb = new MimeNode('multipart/mixed');
+
+      const child = new MimeNode('text/plain');
+      mb.appendChild(child);
+      expect(child.parentNode).to.equal(mb);
+      expect(child.rootNode).to.equal(mb);
+      expect(mb.childNodes.length).to.equal(1);
+      expect(mb.childNodes[0]).to.equal(child);
+    });
+  });
+
+  describe('#replace', function () {
+    it('should replace node', function () {
+      let mb = new MimeNode(),
+        child = mb.createChild('text/plain'),
+        replacement = new MimeNode('image/png');
+
+      child.replace(replacement);
+
+      expect(mb.childNodes.length).to.equal(1);
+      expect(mb.childNodes[0]).to.equal(replacement);
+    });
+  });
+
+  describe('#remove', function () {
+    it('should remove node', function () {
+      let mb = new MimeNode(),
+        child = mb.createChild('text/plain');
+
+      child.remove();
+      expect(mb.childNodes.length).to.equal(0);
+      expect(child.parenNode).to.not.exist;
+    });
+  });
+
+  describe('#setHeader', function () {
+    it('should set header', function () {
+      const mb = new MimeNode();
+
+      mb.setHeader('key', 'value');
+      mb.setHeader('key', 'value1');
+      expect(mb.getHeader('Key')).to.equal('value1');
+
+      mb.setHeader([{
+        key: 'key',
+        value: 'value2'
+      }, {
+        key: 'key2',
+        value: 'value3'
+      }]);
+
+      expect(mb._headers).to.deep.equal([{
+        key: 'Key',
+        value: 'value2'
+      }, {
+        key: 'Key2',
+        value: 'value3'
+      }]);
+
+      mb.setHeader({
+        key: 'value4',
+        key2: 'value5'
+      });
+
+      expect(mb._headers).to.deep.equal([{
+        key: 'Key',
+        value: 'value4'
+      }, {
+        key: 'Key2',
+        value: 'value5'
+      }]);
     });
 
-    describe('#createChild', function () {
-        it('should create child', function () {
-            let mb = new MimeNode('multipart/mixed');
+    it('should set multiple headers with the same key', function () {
+      const mb = new MimeNode();
 
-            let child = mb.createChild('multipart/mixed');
-            expect(child.parentNode).to.equal(mb);
-            expect(child.rootNode).to.equal(mb);
+      mb.setHeader('key', ['value1', 'value2', 'value3']);
+      expect(mb._headers).to.deep.equal([{
+        key: 'Key',
+        value: ['value1', 'value2', 'value3']
+      }]);
+    });
+  });
 
-            let subchild1 = child.createChild('text/html');
-            expect(subchild1.parentNode).to.equal(child);
-            expect(subchild1.rootNode).to.equal(mb);
+  describe('#addHeader', function () {
+    it('should add header', function () {
+      const mb = new MimeNode();
 
-            let subchild2 = child.createChild('text/html');
-            expect(subchild2.parentNode).to.equal(child);
-            expect(subchild2.rootNode).to.equal(mb);
-        });
+      mb.addHeader('key', 'value1');
+      mb.addHeader('key', 'value2');
+
+      mb.addHeader([{
+        key: 'key',
+        value: 'value2'
+      }, {
+        key: 'key2',
+        value: 'value3'
+      }]);
+
+      mb.addHeader({
+        key: 'value4',
+        key2: 'value5'
+      });
+
+      expect(mb._headers).to.deep.equal([{
+        key: 'Key',
+        value: 'value1'
+      }, {
+        key: 'Key',
+        value: 'value2'
+      }, {
+        key: 'Key',
+        value: 'value2'
+      }, {
+        key: 'Key2',
+        value: 'value3'
+      }, {
+        key: 'Key',
+        value: 'value4'
+      }, {
+        key: 'Key2',
+        value: 'value5'
+      }]);
     });
 
-    describe('#appendChild', function () {
-        it('should append child node', function () {
-            let mb = new MimeNode('multipart/mixed');
-
-            let child = new MimeNode('text/plain');
-            mb.appendChild(child);
-            expect(child.parentNode).to.equal(mb);
-            expect(child.rootNode).to.equal(mb);
-            expect(mb.childNodes.length).to.equal(1);
-            expect(mb.childNodes[0]).to.equal(child);
-        });
+    it('should set multiple headers with the same key', function () {
+      const mb = new MimeNode();
+      mb.addHeader('key', ['value1', 'value2', 'value3']);
+      expect(mb._headers).to.deep.equal([{
+        key: 'Key',
+        value: 'value1'
+      }, {
+        key: 'Key',
+        value: 'value2'
+      }, {
+        key: 'Key',
+        value: 'value3'
+      }]);
     });
+  });
 
-    describe('#replace', function () {
-        it('should replace node', function () {
-            let mb = new MimeNode(),
-                child = mb.createChild('text/plain'),
-                replacement = new MimeNode('image/png');
+  describe('#getHeader', function () {
+    it('should return first matching header value', function () {
+      const mb = new MimeNode();
+      mb._headers = [{
+        key: 'Key',
+        value: 'value4'
+      }, {
+        key: 'Key2',
+        value: 'value5'
+      }];
 
-            child.replace(replacement);
-
-            expect(mb.childNodes.length).to.equal(1);
-            expect(mb.childNodes[0]).to.equal(replacement);
-        });
+      expect(mb.getHeader('KEY')).to.equal('value4');
     });
+  });
 
-    describe('#remove', function () {
-        it('should remove node', function () {
-            let mb = new MimeNode(),
-                child = mb.createChild('text/plain');
-
-            child.remove();
-            expect(mb.childNodes.length).to.equal(0);
-            expect(child.parenNode).to.not.exist;
-        });
+  describe('#setContent', function () {
+    it('should set the contents for a node', function () {
+      const mb = new MimeNode();
+      mb.setContent('abc');
+      expect(mb.content).to.equal('abc');
     });
-
-    describe('#setHeader', function () {
-        it('should set header', function () {
-            let mb = new MimeNode();
-
-            mb.setHeader('key', 'value');
-            mb.setHeader('key', 'value1');
-            expect(mb.getHeader('Key')).to.equal('value1');
-
-            mb.setHeader([{
-                key: 'key',
-                value: 'value2'
-            }, {
-                key: 'key2',
-                value: 'value3'
-            }]);
-
-            expect(mb._headers).to.deep.equal([{
-                key: 'Key',
-                value: 'value2'
-            }, {
-                key: 'Key2',
-                value: 'value3'
-            }]);
-
-            mb.setHeader({
-                key: 'value4',
-                key2: 'value5'
-            });
-
-            expect(mb._headers).to.deep.equal([{
-                key: 'Key',
-                value: 'value4'
-            }, {
-                key: 'Key2',
-                value: 'value5'
-            }]);
-        });
-
-        it('should set multiple headers with the same key', function () {
-            let mb = new MimeNode();
-
-            mb.setHeader('key', ['value1', 'value2', 'value3']);
-            expect(mb._headers).to.deep.equal([{
-                key: 'Key',
-                value: ['value1', 'value2', 'value3']
-            }]);
-        });
-    });
-
-    describe('#addHeader', function () {
-        it('should add header', function () {
-            let mb = new MimeNode();
-
-            mb.addHeader('key', 'value1');
-            mb.addHeader('key', 'value2');
-
-            mb.addHeader([{
-                key: 'key',
-                value: 'value2'
-            }, {
-                key: 'key2',
-                value: 'value3'
-            }]);
-
-            mb.addHeader({
-                key: 'value4',
-                key2: 'value5'
-            });
-
-            expect(mb._headers).to.deep.equal([{
-                key: 'Key',
-                value: 'value1'
-            }, {
-                key: 'Key',
-                value: 'value2'
-            }, {
-                key: 'Key',
-                value: 'value2'
-            }, {
-                key: 'Key2',
-                value: 'value3'
-            }, {
-                key: 'Key',
-                value: 'value4'
-            }, {
-                key: 'Key2',
-                value: 'value5'
-            }]);
-        });
-
-        it('should set multiple headers with the same key', function () {
-            let mb = new MimeNode();
-            mb.addHeader('key', ['value1', 'value2', 'value3']);
-            expect(mb._headers).to.deep.equal([{
-                key: 'Key',
-                value: 'value1'
-            }, {
-                key: 'Key',
-                value: 'value2'
-            }, {
-                key: 'Key',
-                value: 'value3'
-            }]);
-        });
-    });
-
-    describe('#getHeader', function () {
-        it('should return first matching header value', function () {
-            let mb = new MimeNode();
-            mb._headers = [{
-                key: 'Key',
-                value: 'value4'
-            }, {
-                key: 'Key2',
-                value: 'value5'
-            }];
-
-            expect(mb.getHeader('KEY')).to.equal('value4');
-        });
-    });
-
-    describe('#setContent', function () {
-        it('should set the contents for a node', function () {
-            let mb = new MimeNode();
-            mb.setContent('abc');
-            expect(mb.content).to.equal('abc');
-        });
-    });
+  });
 
 
-    describe('#build', function () {
+  describe('#build', function () {
 
-        it('should build root node', function (done) {
-            let mb = new MimeNode('text/plain').
+    it('should build root node', function (done) {
+      let mb = new MimeNode('text/plain').
             setHeader({
-                date: '12345',
-                'message-id': '67890'
+              'date': '12345',
+              'message-id': '67890'
             }).
             setContent('Hello world!'),
 
-                expected = 'Content-Type: text/plain\r\n' +
+        expected = 'Content-Type: text/plain\r\n' +
                 'Date: 12345\r\n' +
                 'Message-ID: <67890>\r\n' +
                 'Content-Transfer-Encoding: 7bit\r\n' +
@@ -222,41 +221,41 @@ describe('MimeNode Tests', function () {
                 '\r\n' +
                 'Hello world!\r\n';
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(msg).to.equal(expected);
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(msg).to.equal(expected);
+        done();
+      });
+    });
 
-        it('should build child node', function (done) {
-            let mb = new MimeNode('multipart/mixed'),
-                childNode = mb.createChild('text/plain').
+    it('should build child node', function (done) {
+      let mb = new MimeNode('multipart/mixed'),
+        childNode = mb.createChild('text/plain').
             setContent('Hello world!'),
 
-                expected = 'Content-Type: text/plain\r\n' +
+        expected = 'Content-Type: text/plain\r\n' +
                 'Content-Transfer-Encoding: 7bit\r\n' +
                 '\r\n' +
                 'Hello world!\r\n';
 
-            childNode.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(msg).to.equal(expected);
-                done();
-            });
-        });
+      childNode.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(msg).to.equal(expected);
+        done();
+      });
+    });
 
-        it('should build multipart node', function (done) {
-            let mb = new MimeNode('multipart/mixed', {
-                    baseBoundary: 'test'
-                }).setHeader({
-                    date: '12345',
-                    'message-id': '67890'
-                }),
+    it('should build multipart node', function (done) {
+      let mb = new MimeNode('multipart/mixed', {
+          baseBoundary: 'test'
+        }).setHeader({
+          'date': '12345',
+          'message-id': '67890'
+        }),
 
-                expected = 'Content-Type: multipart/mixed; boundary="--_NmP-test-Part_1"\r\n' +
+        expected = 'Content-Type: multipart/mixed; boundary="--_NmP-test-Part_1"\r\n' +
                 'Date: 12345\r\n' +
                 'Message-ID: <67890>\r\n' +
                 'MIME-Version: 1.0\r\n' +
@@ -268,405 +267,405 @@ describe('MimeNode Tests', function () {
                 'Hello world!\r\n' +
                 '----_NmP-test-Part_1--\r\n';
 
-            mb.createChild('text/plain').setContent('Hello world!');
+      mb.createChild('text/plain').setContent('Hello world!');
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(msg).to.equal(expected);
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(msg).to.equal(expected);
+        done();
+      });
+    });
 
-        it('should build root with generated headers', function (done) {
-            let mb = new MimeNode('text/plain');
-            mb.hostname = 'abc';
+    it('should build root with generated headers', function (done) {
+      const mb = new MimeNode('text/plain');
+      mb.hostname = 'abc';
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/^Date:\s/m.test(msg)).to.be.true;
-                expect(/^Message\-ID:\s/m.test(msg)).to.be.true;
-                expect(/^MIME-Version: 1\.0$/m.test(msg)).to.be.true;
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/^Date:\s/m.test(msg)).to.be.true;
+        expect(/^Message\-ID:\s/m.test(msg)).to.be.true;
+        expect(/^MIME-Version: 1\.0$/m.test(msg)).to.be.true;
+        done();
+      });
+    });
 
-        it('should not include bcc missing in output, but in envelope', function (done) {
-            let mb = new MimeNode('text/plain').
+    it('should not include bcc missing in output, but in envelope', function (done) {
+      const mb = new MimeNode('text/plain').
             setHeader({
-                from: 'sender@example.com',
-                to: 'receiver@example.com',
-                bcc: 'bcc@example.com'
+              from: 'sender@example.com',
+              to: 'receiver@example.com',
+              bcc: 'bcc@example.com'
             });
-            let envelope = mb.getEnvelope();
+      const envelope = mb.getEnvelope();
 
-            expect(envelope).to.deep.equal({
-                from: 'sender@example.com',
-                to: ['receiver@example.com', 'bcc@example.com']
-            });
+      expect(envelope).to.deep.equal({
+        from: 'sender@example.com',
+        to: ['receiver@example.com', 'bcc@example.com']
+      });
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/^From: sender@example.com$/m.test(msg)).to.be.true;
-                expect(/^To: receiver@example.com$/m.test(msg)).to.be.true;
-                expect(!/^Bcc:/m.test(msg)).to.be.true;
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/^From: sender@example.com$/m.test(msg)).to.be.true;
+        expect(/^To: receiver@example.com$/m.test(msg)).to.be.true;
+        expect(!/^Bcc:/m.test(msg)).to.be.true;
+        done();
+      });
+    });
 
-        it('should include bcc missing in output and in envelope', function (done) {
-            let mb = new MimeNode(
+    it('should include bcc missing in output and in envelope', function (done) {
+      const mb = new MimeNode(
                 'text/plain', {
-                    keepBcc: true
+                  keepBcc: true
                 }).
             setHeader({
-                from: 'sender@example.com',
-                to: 'receiver@example.com',
-                bcc: 'bcc@example.com'
+              from: 'sender@example.com',
+              to: 'receiver@example.com',
+              bcc: 'bcc@example.com'
             });
-            let envelope = mb.getEnvelope();
+      const envelope = mb.getEnvelope();
 
-            expect(envelope).to.deep.equal({
-                from: 'sender@example.com',
-                to: ['receiver@example.com', 'bcc@example.com']
-            });
+      expect(envelope).to.deep.equal({
+        from: 'sender@example.com',
+        to: ['receiver@example.com', 'bcc@example.com']
+      });
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/^From: sender@example.com$/m.test(msg)).to.be.true;
-                expect(/^To: receiver@example.com$/m.test(msg)).to.be.true;
-                expect(/^Bcc: bcc@example.com$/m.test(msg)).to.be.true;
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/^From: sender@example.com$/m.test(msg)).to.be.true;
+        expect(/^To: receiver@example.com$/m.test(msg)).to.be.true;
+        expect(/^Bcc: bcc@example.com$/m.test(msg)).to.be.true;
+        done();
+      });
+    });
 
-        it('should use set envelope', function (done) {
-            let mb = new MimeNode('text/plain').
+    it('should use set envelope', function (done) {
+      const mb = new MimeNode('text/plain').
             setHeader({
-                from: 'sender@example.com',
-                to: 'receiver@example.com',
-                bcc: 'bcc@example.com'
+              from: 'sender@example.com',
+              to: 'receiver@example.com',
+              bcc: 'bcc@example.com'
             }).setEnvelope({
-                from: 'U Name, A Name <a@a.a>',
-                to: 'B Name <b@b.b>, c@c.c',
-                bcc: 'P P P, <u@u.u>',
-                fooField: {
-                    barValue: 'foobar'
-                }
+              from: 'U Name, A Name <a@a.a>',
+              to: 'B Name <b@b.b>, c@c.c',
+              bcc: 'P P P, <u@u.u>',
+              fooField: {
+                barValue: 'foobar'
+              }
             });
-            let envelope = mb.getEnvelope();
+      const envelope = mb.getEnvelope();
 
-            expect(envelope).to.deep.equal({
-                from: 'a@a.a',
-                to: ['b@b.b', 'c@c.c', 'u@u.u'],
-                fooField: {
-                    barValue: 'foobar'
-                }
-            });
+      expect(envelope).to.deep.equal({
+        from: 'a@a.a',
+        to: ['b@b.b', 'c@c.c', 'u@u.u'],
+        fooField: {
+          barValue: 'foobar'
+        }
+      });
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/^From: sender@example.com$/m.test(msg)).to.be.true;
-                expect(/^To: receiver@example.com$/m.test(msg)).to.be.true;
-                expect(!/^Bcc:/m.test(msg)).to.be.true;
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/^From: sender@example.com$/m.test(msg)).to.be.true;
+        expect(/^To: receiver@example.com$/m.test(msg)).to.be.true;
+        expect(!/^Bcc:/m.test(msg)).to.be.true;
+        done();
+      });
+    });
 
-        it('should have unicode subject', function (done) {
-            let mb = new MimeNode('text/plain').
+    it('should have unicode subject', function (done) {
+      const mb = new MimeNode('text/plain').
             setHeader({
-                subject: 'jõgeval istus kägu metsas'
+              subject: 'jõgeval istus kägu metsas'
             });
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/^Subject: =\?UTF\-8\?Q\?j=C3=B5geval_istus_k=C3=A4gu\?= metsas$/m.test(msg)).to.be.true;
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/^Subject: =\?UTF\-8\?Q\?j=C3=B5geval_istus_k=C3=A4gu\?= metsas$/m.test(msg)).to.be.true;
+        done();
+      });
+    });
 
-        it('should have unicode subject with strange characters', function (done) {
-            let mb = new MimeNode('text/plain').
+    it('should have unicode subject with strange characters', function (done) {
+      const mb = new MimeNode('text/plain').
             setHeader({
-                subject: 'ˆ¸ÁÌÓıÏˇÁÛ^¸\\ÁıˆÌÁÛØ^\\˜Û˝™ˇıÓ¸^\\˜ﬁ^\\·\\˜Ø^£˜#ﬁ^\\£ﬁ^\\£ﬁ^\\'
+              subject: 'ˆ¸ÁÌÓıÏˇÁÛ^¸\\ÁıˆÌÁÛØ^\\˜Û˝™ˇıÓ¸^\\˜ﬁ^\\·\\˜Ø^£˜#ﬁ^\\£ﬁ^\\£ﬁ^\\'
             });
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(msg.match(/\bSubject: [^\r]*\r\n( [^\r]*\r\n)*/)[0]).to.equal('Subject: =?UTF-8?B?y4bCuMOBw4zDk8Sxw4/Lh8OBw5tewrhcw4HEscuG?=\r\n =?UTF-8?B?w4zDgcObw5heXMucw5vLneKEosuHxLHDk8K4Xlw=?=\r\n =?UTF-8?B?y5zvrIFeXMK3XMucw5hewqPLnCPvrIFeXMKj76yB?=\r\n =?UTF-8?B?XlzCo++sgV5c?=\r\n');
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(msg.match(/\bSubject: [^\r]*\r\n( [^\r]*\r\n)*/)[0]).to.equal('Subject: =?UTF-8?B?y4bCuMOBw4zDk8Sxw4/Lh8OBw5tewrhcw4HEscuG?=\r\n =?UTF-8?B?w4zDgcObw5heXMucw5vLneKEosuHxLHDk8K4Xlw=?=\r\n =?UTF-8?B?y5zvrIFeXMK3XMucw5hewqPLnCPvrIFeXMKj76yB?=\r\n =?UTF-8?B?XlzCo++sgV5c?=\r\n');
+        done();
+      });
+    });
 
-        it('should keep 7bit text as is', function (done) {
-            let mb = new MimeNode('text/plain').
+    it('should keep 7bit text as is', function (done) {
+      const mb = new MimeNode('text/plain').
             setContent('tere tere');
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/\r\n\r\ntere tere\r\n$/.test(msg)).to.be.true;
-                expect(/^Content-Type: text\/plain$/m.test(msg)).to.be.true;
-                expect(/^Content-Transfer-Encoding: 7bit$/m.test(msg)).to.be.true;
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/\r\n\r\ntere tere\r\n$/.test(msg)).to.be.true;
+        expect(/^Content-Type: text\/plain$/m.test(msg)).to.be.true;
+        expect(/^Content-Transfer-Encoding: 7bit$/m.test(msg)).to.be.true;
+        done();
+      });
+    });
 
-        it('should prefer base64', function (done) {
-            let mb = new MimeNode('text/plain').
+    it('should prefer base64', function (done) {
+      const mb = new MimeNode('text/plain').
             setHeader({
-                subject: 'õõõõ'
+              subject: 'õõõõ'
             }).
             setContent('õõõõõõõõ');
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
 
-                expect(/^Content-Type: text\/plain; charset=utf-8$/m.test(msg)).to.be.true;
-                expect(/^Content-Transfer-Encoding: base64$/m.test(msg)).to.be.true;
-                expect(/^Subject: =\?UTF-8\?B\?w7XDtcO1w7U=\?=$/m.test(msg)).to.be.true;
-                msg = msg.split('\r\n\r\n');
-                msg.shift();
-                msg = msg.join('\r\n\r\n');
+        expect(/^Content-Type: text\/plain; charset=utf-8$/m.test(msg)).to.be.true;
+        expect(/^Content-Transfer-Encoding: base64$/m.test(msg)).to.be.true;
+        expect(/^Subject: =\?UTF-8\?B\?w7XDtcO1w7U=\?=$/m.test(msg)).to.be.true;
+        msg = msg.split('\r\n\r\n');
+        msg.shift();
+        msg = msg.join('\r\n\r\n');
 
-                expect(msg).to.equal('w7XDtcO1w7XDtcO1w7XDtQ==\r\n');
-                done();
-            });
-        });
+        expect(msg).to.equal('w7XDtcO1w7XDtcO1w7XDtQ==\r\n');
+        done();
+      });
+    });
 
-        it('should force quoted-printable', function (done) {
-            let mb = new MimeNode('text/plain', {
-                textEncoding: 'quoted-printable'
-            }).setHeader({
-                subject: 'õõõõ'
-            }).
+    it('should force quoted-printable', function (done) {
+      const mb = new MimeNode('text/plain', {
+        textEncoding: 'quoted-printable'
+      }).setHeader({
+        subject: 'õõõõ'
+      }).
             setContent('õõõõõõõõ');
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
 
-                expect(/^Content-Type: text\/plain; charset=utf-8$/m.test(msg)).to.be.true;
-                expect(/^Content-Transfer-Encoding: quoted-printable$/m.test(msg)).to.be.true;
-                expect(/^Subject: =\?UTF-8\?Q\?=C3=B5=C3=B5=C3=B5=C3=B5\?=$/m.test(msg)).to.be.true;
+        expect(/^Content-Type: text\/plain; charset=utf-8$/m.test(msg)).to.be.true;
+        expect(/^Content-Transfer-Encoding: quoted-printable$/m.test(msg)).to.be.true;
+        expect(/^Subject: =\?UTF-8\?Q\?=C3=B5=C3=B5=C3=B5=C3=B5\?=$/m.test(msg)).to.be.true;
 
-                msg = msg.split('\r\n\r\n');
-                msg.shift();
-                msg = msg.join('\r\n\r\n');
+        msg = msg.split('\r\n\r\n');
+        msg.shift();
+        msg = msg.join('\r\n\r\n');
 
-                expect(msg).to.equal('=C3=B5=C3=B5=C3=B5=C3=B5=C3=B5=C3=B5=C3=B5=C3=B5\r\n');
-                done();
-            });
-        });
+        expect(msg).to.equal('=C3=B5=C3=B5=C3=B5=C3=B5=C3=B5=C3=B5=C3=B5=C3=B5\r\n');
+        done();
+      });
+    });
 
-        it('should prefer quoted-printable', function (done) {
-            let mb = new MimeNode('text/plain').
+    it('should prefer quoted-printable', function (done) {
+      const mb = new MimeNode('text/plain').
             setContent('ooooooooõ');
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
 
-                expect(/^Content-Type: text\/plain; charset=utf-8$/m.test(msg)).to.be.true;
-                expect(/^Content-Transfer-Encoding: quoted-printable$/m.test(msg)).to.be.true;
+        expect(/^Content-Type: text\/plain; charset=utf-8$/m.test(msg)).to.be.true;
+        expect(/^Content-Transfer-Encoding: quoted-printable$/m.test(msg)).to.be.true;
 
-                msg = msg.split('\r\n\r\n');
-                msg.shift();
-                msg = msg.join('\r\n\r\n');
+        msg = msg.split('\r\n\r\n');
+        msg.shift();
+        msg = msg.join('\r\n\r\n');
 
-                expect(msg).to.equal('oooooooo=C3=B5\r\n');
-                done();
-            });
-        });
+        expect(msg).to.equal('oooooooo=C3=B5\r\n');
+        done();
+      });
+    });
 
-        it('should not flow text', function (done) {
-            let mb = new MimeNode('text/plain').
+    it('should not flow text', function (done) {
+      const mb = new MimeNode('text/plain').
             setContent('a b c d e f g h i j k l m o p q r s t u w x y z 1 2 3 4 5 6 7 8 9 0 a b c d e f g h i j k l m o p q r s t u w x y z 1 2 3 4 5 6 7 8 9 0');
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
 
-                expect(/^Content-Type: text\/plain$/m.test(msg)).to.be.true;
-                expect(/^Content-Transfer-Encoding: quoted-printable$/m.test(msg)).to.be.true;
+        expect(/^Content-Type: text\/plain$/m.test(msg)).to.be.true;
+        expect(/^Content-Transfer-Encoding: quoted-printable$/m.test(msg)).to.be.true;
 
-                msg = msg.split('\r\n\r\n');
-                msg.shift();
-                msg = msg.join('\r\n\r\n');
+        msg = msg.split('\r\n\r\n');
+        msg.shift();
+        msg = msg.join('\r\n\r\n');
 
-                expect(msg).to.equal('a b c d e f g h i j k l m o p q r s t u w x y z 1 2 3 4 5 6 7 8 9 0 a b c d=\r\n e f g h i j k l m o p q r s t u w x y z 1 2 3 4 5 6 7 8 9 =\r\n0\r\n');
-                done();
-            });
-        });
+        expect(msg).to.equal('a b c d e f g h i j k l m o p q r s t u w x y z 1 2 3 4 5 6 7 8 9 0 a b c d=\r\n e f g h i j k l m o p q r s t u w x y z 1 2 3 4 5 6 7 8 9 =\r\n0\r\n');
+        done();
+      });
+    });
 
-        it('should not flow html', function (done) {
-            let mb = new MimeNode('text/html').
+    it('should not flow html', function (done) {
+      const mb = new MimeNode('text/html').
             setContent('a b c d e f g h i j k l m o p q r s t u w x y z 1 2 3 4 5 6 7 8 9 0 a b c d e f g h i j k l m o p q r s t u w x y z 1 2 3 4 5 6 7 8 9 0');
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/^Content-Type: text\/html$/m.test(msg)).to.be.true;
-                expect(/^Content-Transfer-Encoding: quoted-printable$/m.test(msg)).to.be.true;
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/^Content-Type: text\/html$/m.test(msg)).to.be.true;
+        expect(/^Content-Transfer-Encoding: quoted-printable$/m.test(msg)).to.be.true;
 
-                msg = msg.split('\r\n\r\n');
-                msg.shift();
-                msg = msg.join('\r\n\r\n');
+        msg = msg.split('\r\n\r\n');
+        msg.shift();
+        msg = msg.join('\r\n\r\n');
 
-                expect(msg).to.equal('a b c d e f g h i j k l m o p q r s t u w x y z 1 2 3 4 5 6 7 8 9 0 a b c d=\r\n e f g h i j k l m o p q r s t u w x y z 1 2 3 4 5 6 7 8 9 =\r\n0\r\n');
-                done();
-            });
-        });
+        expect(msg).to.equal('a b c d e f g h i j k l m o p q r s t u w x y z 1 2 3 4 5 6 7 8 9 0 a b c d=\r\n e f g h i j k l m o p q r s t u w x y z 1 2 3 4 5 6 7 8 9 =\r\n0\r\n');
+        done();
+      });
+    });
 
-        it('should use 7bit for html', function (done) {
-            let mb = new MimeNode('text/html').
+    it('should use 7bit for html', function (done) {
+      const mb = new MimeNode('text/html').
             setContent('a b c d e f g h i j k l m o p\r\nq r s t u w x y z 1 2 3 4 5 6\r\n7 8 9 0 a b c d e f g h i j k\r\nl m o p q r s t u w x y z\r\n1 2 3 4 5 6 7 8 9 0');
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/^Content-Type: text\/html$/m.test(msg)).to.be.true;
-                expect(/^Content-Transfer-Encoding: 7bit$/m.test(msg)).to.be.true;
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/^Content-Type: text\/html$/m.test(msg)).to.be.true;
+        expect(/^Content-Transfer-Encoding: 7bit$/m.test(msg)).to.be.true;
 
-                msg = msg.split('\r\n\r\n');
-                msg.shift();
-                msg = msg.join('\r\n\r\n');
+        msg = msg.split('\r\n\r\n');
+        msg.shift();
+        msg = msg.join('\r\n\r\n');
 
-                expect(msg).to.equal('a b c d e f g h i j k l m o p\r\nq r s t u w x y z 1 2 3 4 5 6\r\n7 8 9 0 a b c d e f g h i j k\r\nl m o p q r s t u w x y z\r\n1 2 3 4 5 6 7 8 9 0\r\n');
-                done();
-            });
-        });
+        expect(msg).to.equal('a b c d e f g h i j k l m o p\r\nq r s t u w x y z 1 2 3 4 5 6\r\n7 8 9 0 a b c d e f g h i j k\r\nl m o p q r s t u w x y z\r\n1 2 3 4 5 6 7 8 9 0\r\n');
+        done();
+      });
+    });
 
-        it('should fetch ascii filename', function (done) {
-            let mb = new MimeNode('text/plain', {
-                filename: 'jogeva.txt'
-            }).
+    it('should fetch ascii filename', function (done) {
+      const mb = new MimeNode('text/plain', {
+        filename: 'jogeva.txt'
+      }).
             setContent('jogeva');
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/\r\n\r\njogeva\r\n$/.test(msg)).to.be.true;
-                expect(/^Content-Type: text\/plain; name=jogeva.txt$/m.test(msg)).to.be.true;
-                expect(/^Content-Transfer-Encoding: 7bit$/m.test(msg)).to.be.true;
-                expect(/^Content-Disposition: attachment; filename=jogeva.txt$/m.test(msg)).to.be.true;
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/\r\n\r\njogeva\r\n$/.test(msg)).to.be.true;
+        expect(/^Content-Type: text\/plain; name=jogeva.txt$/m.test(msg)).to.be.true;
+        expect(/^Content-Transfer-Encoding: 7bit$/m.test(msg)).to.be.true;
+        expect(/^Content-Disposition: attachment; filename=jogeva.txt$/m.test(msg)).to.be.true;
+        done();
+      });
+    });
 
-        it('should set unicode filename', function (done) {
-            let mb = new MimeNode('text/plain', {
-                filename: 'jõgeva.txt'
-            }).
+    it('should set unicode filename', function (done) {
+      const mb = new MimeNode('text/plain', {
+        filename: 'jõgeva.txt'
+      }).
             setContent('jõgeva');
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/^Content-Type: text\/plain; charset=utf-8;/m.test(msg)).to.be.true;
-                expect(/^Content-Transfer-Encoding: quoted-printable$/m.test(msg)).to.be.true;
-                expect(/^Content-Disposition: attachment; filename\*0\*=utf-8''j%C3%B5geva.txt$/m.test(msg)).to.be.true;
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/^Content-Type: text\/plain; charset=utf-8;/m.test(msg)).to.be.true;
+        expect(/^Content-Transfer-Encoding: quoted-printable$/m.test(msg)).to.be.true;
+        expect(/^Content-Disposition: attachment; filename\*0\*=utf-8''j%C3%B5geva.txt$/m.test(msg)).to.be.true;
+        done();
+      });
+    });
 
-        it('should set dashed filename', function (done) {
-            let mb = new MimeNode('text/plain', {
-                filename: 'Ɣ------Ɣ------Ɣ------Ɣ------Ɣ------Ɣ------Ɣ------.pdf'
-            }).
+    it('should set dashed filename', function (done) {
+      const mb = new MimeNode('text/plain', {
+        filename: 'Ɣ------Ɣ------Ɣ------Ɣ------Ɣ------Ɣ------Ɣ------.pdf'
+      }).
             setContent('jõgeva');
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(msg.indexOf('Content-Disposition: attachment;\r\n' +
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(msg.indexOf('Content-Disposition: attachment;\r\n' +
                     ' filename*0*=utf-8\'\'%C6%94------%C6%94------%C6%94------%C6%94;\r\n' +
                     ' filename*1*=------%C6%94------%C6%94------%C6%94------.pdf')).to.be.gte(0);
-                done();
-            });
-        });
+        done();
+      });
+    });
 
-        it('should encode filename with a space', function (done) {
-            let mb = new MimeNode('text/plain', {
-                filename: 'document a.test.pdf'
-            }).
+    it('should encode filename with a space', function (done) {
+      const mb = new MimeNode('text/plain', {
+        filename: 'document a.test.pdf'
+      }).
             setContent('jõgeva');
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/^Content-Type: text\/plain; charset=utf-8;/m.test(msg)).to.be.true;
-                expect(/^Content-Transfer-Encoding: quoted-printable$/m.test(msg)).to.be.true;
-                expect(/^Content-Disposition: attachment; filename="document a.test.pdf"$/m.test(msg)).to.be.true;
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/^Content-Type: text\/plain; charset=utf-8;/m.test(msg)).to.be.true;
+        expect(/^Content-Transfer-Encoding: quoted-printable$/m.test(msg)).to.be.true;
+        expect(/^Content-Disposition: attachment; filename="document a.test.pdf"$/m.test(msg)).to.be.true;
+        done();
+      });
+    });
 
-        it('should detect content type from filename', function (done) {
-            let mb = new MimeNode(false, {
-                filename: 'jogeva.zip'
-            }).
+    it('should detect content type from filename', function (done) {
+      const mb = new MimeNode(false, {
+        filename: 'jogeva.zip'
+      }).
             setContent('jogeva');
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/^Content-Type: application\/zip;/m.test(msg)).to.be.true;
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/^Content-Type: application\/zip;/m.test(msg)).to.be.true;
+        done();
+      });
+    });
 
-        it('should convert address objects', function (done) {
-            let mb = new MimeNode(false).
+    it('should convert address objects', function (done) {
+      const mb = new MimeNode(false).
             setHeader({
-                from: [{
-                    name: 'the safewithme õ testuser',
-                    address: 'safewithme.testuser@jõgeva.com'
-                }],
-                cc: [{
-                    name: 'the safewithme testuser',
-                    address: 'safewithme.testuser@jõgeva.com'
-                }]
+              from: [{
+                name: 'the safewithme õ testuser',
+                address: 'safewithme.testuser@jõgeva.com'
+              }],
+              cc: [{
+                name: 'the safewithme testuser',
+                address: 'safewithme.testuser@jõgeva.com'
+              }]
             });
 
-            expect(mb.getEnvelope()).to.deep.equal({
-                from: 'safewithme.testuser@xn--jgeva-dua.com',
-                to: [
-                    'safewithme.testuser@xn--jgeva-dua.com'
-                ]
-            });
+      expect(mb.getEnvelope()).to.deep.equal({
+        from: 'safewithme.testuser@xn--jgeva-dua.com',
+        to: [
+          'safewithme.testuser@xn--jgeva-dua.com'
+        ]
+      });
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/^From: =\?UTF\-8\?Q\?the_safewithme_=C3=B5_testuser\?=$/m.test(msg)).to.be.true;
-                expect(/^\s+<safewithme.testuser@xn\-\-jgeva-dua.com>$/m.test(msg)).to.be.true;
-                expect(/^Cc: the safewithme testuser <safewithme.testuser@xn\-\-jgeva-dua.com>$/m.test(msg)).to.be.true;
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/^From: =\?UTF\-8\?Q\?the_safewithme_=C3=B5_testuser\?=$/m.test(msg)).to.be.true;
+        expect(/^\s+<safewithme.testuser@xn\-\-jgeva-dua.com>$/m.test(msg)).to.be.true;
+        expect(/^Cc: the safewithme testuser <safewithme.testuser@xn\-\-jgeva-dua.com>$/m.test(msg)).to.be.true;
+        done();
+      });
+    });
 
-        it('should skip empty header', function (done) {
-            let mb = new MimeNode('text/plain').
+    it('should skip empty header', function (done) {
+      let mb = new MimeNode('text/plain').
             setHeader({
-                a: 'b',
-                cc: '',
-                dd: [],
-                o: false,
-                date: 'zzz',
-                'message-id': '67890'
+              'a': 'b',
+              'cc': '',
+              'dd': [],
+              'o': false,
+              'date': 'zzz',
+              'message-id': '67890'
             }).
             setContent('Hello world!'),
 
-                expected = 'Content-Type: text/plain\r\n' +
+        expected = 'Content-Type: text/plain\r\n' +
                 'A: b\r\n' +
                 'Date: zzz\r\n' +
                 'Message-ID: <67890>\r\n' +
@@ -675,34 +674,34 @@ describe('MimeNode Tests', function () {
                 '\r\n' +
                 'Hello world!\r\n';
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(msg).to.equal(expected);
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(msg).to.equal(expected);
+        done();
+      });
+    });
 
-        it('should not process prepared headers', function (done) {
-            let mb = new MimeNode('text/plain').
+    it('should not process prepared headers', function (done) {
+      let mb = new MimeNode('text/plain').
             setHeader({
-                unprepared: {
-                    value: new Array(100).join('a b')
-                },
-                prepared: {
-                    value: new Array(100).join('a b'),
-                    prepared: true
-                },
-                unicode: {
-                    value: 'õäöü',
-                    prepared: true
-                },
-                date: 'zzz',
-                'message-id': '67890'
+              'unprepared': {
+                value: new Array(100).join('a b')
+              },
+              'prepared': {
+                value: new Array(100).join('a b'),
+                prepared: true
+              },
+              'unicode': {
+                value: 'õäöü',
+                prepared: true
+              },
+              'date': 'zzz',
+              'message-id': '67890'
             }).
             setContent('Hello world!'),
 
-                expected = 'Content-Type: text/plain\r\n' +
+        expected = 'Content-Type: text/plain\r\n' +
 
                 // long folded value
                 'Unprepared: a ba ba ba ba ba ba ba ba ba ba ba ba ba ba ba ba ba ba ba ba\r\n' +
@@ -724,23 +723,23 @@ describe('MimeNode Tests', function () {
                 '\r\n' +
                 'Hello world!\r\n';
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(msg).to.equal(expected);
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(msg).to.equal(expected);
+        done();
+      });
+    });
 
-        it('should set default transfer encoding for application content', function (done) {
-            let mb = new MimeNode('application/x-my-stuff').
+    it('should set default transfer encoding for application content', function (done) {
+      let mb = new MimeNode('application/x-my-stuff').
             setHeader({
-                date: '12345',
-                'message-id': '67890'
+              'date': '12345',
+              'message-id': '67890'
             }).
             setContent('Hello world!'),
 
-                expected = 'Content-Type: application/x-my-stuff\r\n' +
+        expected = 'Content-Type: application/x-my-stuff\r\n' +
                 'Date: 12345\r\n' +
                 'Message-ID: <67890>\r\n' +
                 'Content-Transfer-Encoding: base64\r\n' +
@@ -748,23 +747,23 @@ describe('MimeNode Tests', function () {
                 '\r\n' +
                 'SGVsbG8gd29ybGQh\r\n';
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(msg).to.equal(expected);
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(msg).to.equal(expected);
+        done();
+      });
+    });
 
-        it('should not set transfer encoding for multipart content', function (done) {
-            let mb = new MimeNode('multipart/global').
+    it('should not set transfer encoding for multipart content', function (done) {
+      let mb = new MimeNode('multipart/global').
             setHeader({
-                date: '12345',
-                'message-id': '67890'
+              'date': '12345',
+              'message-id': '67890'
             }).
             setContent('Hello world!'),
 
-                expected = 'Content-Type: multipart/global; boundary=abc\r\n' +
+        expected = 'Content-Type: multipart/global; boundary=abc\r\n' +
                 'Date: 12345\r\n' +
                 'Message-ID: <67890>\r\n' +
                 'MIME-Version: 1.0\r\n' +
@@ -773,521 +772,521 @@ describe('MimeNode Tests', function () {
                 '--abc--' +
                 '\r\n';
 
-            mb.boundary = 'abc';
+      mb.boundary = 'abc';
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(msg).to.equal(expected);
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(msg).to.equal(expected);
+        done();
+      });
+    });
 
-        it('should not set transfer encoding for message/ content', function (done) {
-            let mb = new MimeNode('message/rfc822').
+    it('should not set transfer encoding for message/ content', function (done) {
+      let mb = new MimeNode('message/rfc822').
             setHeader({
-                date: '12345',
-                'message-id': '67890'
+              'date': '12345',
+              'message-id': '67890'
             }).
             setContent('Hello world!'),
 
-                expected = 'Content-Type: message/rfc822\r\n' +
+        expected = 'Content-Type: message/rfc822\r\n' +
                 'Date: 12345\r\n' +
                 'Message-ID: <67890>\r\n' +
                 'MIME-Version: 1.0\r\n' +
                 '\r\n' +
                 'Hello world!\r\n';
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(msg).to.equal(expected);
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(msg).to.equal(expected);
+        done();
+      });
+    });
 
-        it('should use from domain for message-id', function (done) {
-            let mb = new MimeNode('text/plain').
+    it('should use from domain for message-id', function (done) {
+      const mb = new MimeNode('text/plain').
             setHeader({
-                from: 'test@example.com'
+              from: 'test@example.com'
             });
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/^Message-ID: <[0-9a-f\-]+@example\.com>$/m.test(msg)).to.be.true;
-                done();
-            });
-        });
-
-        it('should fallback to hostname for message-id', function (done) {
-            let mb = new MimeNode('text/plain');
-            mb.hostname = 'abc';
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/^Message-ID: <[0-9a-f\-]+@abc>$/m.test(msg)).to.be.true;
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/^Message-ID: <[0-9a-f\-]+@example\.com>$/m.test(msg)).to.be.true;
+        done();
+      });
     });
 
-    describe('#getEnvelope', function () {
-        it('should get envelope', function () {
-            expect(new MimeNode().addHeader({
-                from: 'From <from@example.com>',
-                sender: 'Sender <sender@example.com>',
-                to: 'receiver1@example.com'
-            }).addHeader({
-                to: 'receiver2@example.com',
-                cc: 'receiver1@example.com, receiver3@example.com',
-                bcc: 'receiver4@example.com, Rec5 <receiver5@example.com>'
-            }).getEnvelope()).to.deep.equal({
-                from: 'from@example.com',
-                to: ['receiver1@example.com', 'receiver2@example.com', 'receiver3@example.com', 'receiver4@example.com', 'receiver5@example.com']
-            });
-
-            expect(new MimeNode().addHeader({
-                sender: 'Sender <sender@example.com>',
-                to: 'receiver1@example.com'
-            }).addHeader({
-                to: 'receiver2@example.com',
-                cc: 'receiver1@example.com, receiver3@example.com',
-                bcc: 'receiver4@example.com, Rec5 <receiver5@example.com>'
-            }).getEnvelope()).to.deep.equal({
-                from: 'sender@example.com',
-                to: ['receiver1@example.com', 'receiver2@example.com', 'receiver3@example.com', 'receiver4@example.com', 'receiver5@example.com']
-            });
-        });
+    it('should fallback to hostname for message-id', function (done) {
+      const mb = new MimeNode('text/plain');
+      mb.hostname = 'abc';
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/^Message-ID: <[0-9a-f\-]+@abc>$/m.test(msg)).to.be.true;
+        done();
+      });
     });
+  });
 
-    describe('#messageId', function () {
-        it('should create and return message-Id', function () {
-            let mail = new MimeNode().addHeader({
-                from: 'From <from@example.com>'
-            });
+  describe('#getEnvelope', function () {
+    it('should get envelope', function () {
+      expect(new MimeNode().addHeader({
+        from: 'From <from@example.com>',
+        sender: 'Sender <sender@example.com>',
+        to: 'receiver1@example.com'
+      }).addHeader({
+        to: 'receiver2@example.com',
+        cc: 'receiver1@example.com, receiver3@example.com',
+        bcc: 'receiver4@example.com, Rec5 <receiver5@example.com>'
+      }).getEnvelope()).to.deep.equal({
+        from: 'from@example.com',
+        to: ['receiver1@example.com', 'receiver2@example.com', 'receiver3@example.com', 'receiver4@example.com', 'receiver5@example.com']
+      });
 
-            let messageId = mail.messageId();
-            expect(/^<[\w\-]+@example\.com>$/.test(messageId)).to.be.true;
-            expect(messageId).to.equal(mail.messageId());
-        });
+      expect(new MimeNode().addHeader({
+        sender: 'Sender <sender@example.com>',
+        to: 'receiver1@example.com'
+      }).addHeader({
+        to: 'receiver2@example.com',
+        cc: 'receiver1@example.com, receiver3@example.com',
+        bcc: 'receiver4@example.com, Rec5 <receiver5@example.com>'
+      }).getEnvelope()).to.deep.equal({
+        from: 'sender@example.com',
+        to: ['receiver1@example.com', 'receiver2@example.com', 'receiver3@example.com', 'receiver4@example.com', 'receiver5@example.com']
+      });
     });
+  });
 
-    describe('#getAddresses', function () {
-        it('should get address object', function () {
-            expect(new MimeNode().addHeader({
-                from: 'From <from@example.com>',
-                sender: 'Sender <sender@example.com>',
-                to: 'receiver1@example.com'
-            }).addHeader({
-                to: 'receiver2@example.com',
-                cc: 'receiver1@example.com, receiver3@example.com',
-                bcc: 'receiver4@example.com, Rec5 <receiver5@example.com>'
-            }).getAddresses()).to.deep.equal({
-                from: [{
-                    address: 'from@example.com',
-                    name: 'From'
-                }],
-                sender: [{
-                    address: 'sender@example.com',
-                    name: 'Sender'
-                }],
-                to: [{
-                    address: 'receiver1@example.com',
-                    name: ''
-                }, {
-                    address: 'receiver2@example.com',
-                    name: ''
-                }],
-                cc: [{
-                    address: 'receiver1@example.com',
-                    name: ''
-                }, {
-                    address: 'receiver3@example.com',
-                    name: ''
-                }],
-                bcc: [{
-                    address: 'receiver4@example.com',
-                    name: ''
-                }, {
-                    address: 'receiver5@example.com',
-                    name: 'Rec5'
-                }]
-            });
+  describe('#messageId', function () {
+    it('should create and return message-Id', function () {
+      const mail = new MimeNode().addHeader({
+        from: 'From <from@example.com>'
+      });
 
-            expect(new MimeNode().addHeader({
-                sender: 'Sender <sender@example.com>',
-                to: 'receiver1@example.com'
-            }).addHeader({
-                to: 'receiver2@example.com',
-                cc: 'receiver1@example.com, receiver1@example.com',
-                bcc: 'receiver4@example.com, Rec5 <receiver5@example.com>'
-            }).getAddresses()).to.deep.equal({
-                sender: [{
-                    address: 'sender@example.com',
-                    name: 'Sender'
-                }],
-                to: [{
-                    address: 'receiver1@example.com',
-                    name: ''
-                }, {
-                    address: 'receiver2@example.com',
-                    name: ''
-                }],
-                cc: [{
-                    address: 'receiver1@example.com',
-                    name: ''
-                }],
-                bcc: [{
-                    address: 'receiver4@example.com',
-                    name: ''
-                }, {
-                    address: 'receiver5@example.com',
-                    name: 'Rec5'
-                }]
-            });
-        });
+      const messageId = mail.messageId();
+      expect(/^<[\w\-]+@example\.com>$/.test(messageId)).to.be.true;
+      expect(messageId).to.equal(mail.messageId());
     });
+  });
 
-    describe('#_parseAddresses', function () {
-        it('should normalize header key', function () {
-            let mb = new MimeNode();
+  describe('#getAddresses', function () {
+    it('should get address object', function () {
+      expect(new MimeNode().addHeader({
+        from: 'From <from@example.com>',
+        sender: 'Sender <sender@example.com>',
+        to: 'receiver1@example.com'
+      }).addHeader({
+        to: 'receiver2@example.com',
+        cc: 'receiver1@example.com, receiver3@example.com',
+        bcc: 'receiver4@example.com, Rec5 <receiver5@example.com>'
+      }).getAddresses()).to.deep.equal({
+        from: [{
+          address: 'from@example.com',
+          name: 'From'
+        }],
+        sender: [{
+          address: 'sender@example.com',
+          name: 'Sender'
+        }],
+        to: [{
+          address: 'receiver1@example.com',
+          name: ''
+        }, {
+          address: 'receiver2@example.com',
+          name: ''
+        }],
+        cc: [{
+          address: 'receiver1@example.com',
+          name: ''
+        }, {
+          address: 'receiver3@example.com',
+          name: ''
+        }],
+        bcc: [{
+          address: 'receiver4@example.com',
+          name: ''
+        }, {
+          address: 'receiver5@example.com',
+          name: 'Rec5'
+        }]
+      });
 
-            expect(mb._parseAddresses('test address@example.com')).to.deep.equal([{
-                address: 'address@example.com',
-                name: 'test'
-            }]);
+      expect(new MimeNode().addHeader({
+        sender: 'Sender <sender@example.com>',
+        to: 'receiver1@example.com'
+      }).addHeader({
+        to: 'receiver2@example.com',
+        cc: 'receiver1@example.com, receiver1@example.com',
+        bcc: 'receiver4@example.com, Rec5 <receiver5@example.com>'
+      }).getAddresses()).to.deep.equal({
+        sender: [{
+          address: 'sender@example.com',
+          name: 'Sender'
+        }],
+        to: [{
+          address: 'receiver1@example.com',
+          name: ''
+        }, {
+          address: 'receiver2@example.com',
+          name: ''
+        }],
+        cc: [{
+          address: 'receiver1@example.com',
+          name: ''
+        }],
+        bcc: [{
+          address: 'receiver4@example.com',
+          name: ''
+        }, {
+          address: 'receiver5@example.com',
+          name: 'Rec5'
+        }]
+      });
+    });
+  });
 
-            expect(mb._parseAddresses(['test address@example.com'])).to.deep.equal([{
-                address: 'address@example.com',
-                name: 'test'
-            }]);
+  describe('#_parseAddresses', function () {
+    it('should normalize header key', function () {
+      const mb = new MimeNode();
 
-            expect(mb._parseAddresses([
+      expect(mb._parseAddresses('test address@example.com')).to.deep.equal([{
+        address: 'address@example.com',
+        name: 'test'
+      }]);
+
+      expect(mb._parseAddresses(['test address@example.com'])).to.deep.equal([{
+        address: 'address@example.com',
+        name: 'test'
+      }]);
+
+      expect(mb._parseAddresses([
                 ['test address@example.com']
-            ])).to.deep.equal([{
-                address: 'address@example.com',
-                name: 'test'
-            }]);
+      ])).to.deep.equal([{
+        address: 'address@example.com',
+        name: 'test'
+      }]);
 
-            expect(mb._parseAddresses([{
-                address: 'address@example.com',
-                name: 'test'
-            }])).to.deep.equal([{
-                address: 'address@example.com',
-                name: 'test'
-            }]);
-        });
+      expect(mb._parseAddresses([{
+        address: 'address@example.com',
+        name: 'test'
+      }])).to.deep.equal([{
+        address: 'address@example.com',
+        name: 'test'
+      }]);
+    });
+  });
+
+  describe('#_normalizeHeaderKey', function () {
+    it('should normalize header key', function () {
+      const mb = new MimeNode();
+
+      expect(mb._normalizeHeaderKey('key')).to.equal('Key');
+      expect(mb._normalizeHeaderKey('mime-vERSION')).to.equal('MIME-Version');
+      expect(mb._normalizeHeaderKey('-a-long-name')).to.equal('-A-Long-Name');
+      expect(mb._normalizeHeaderKey('some-spf')).to.equal('Some-SPF');
+      expect(mb._normalizeHeaderKey('dkim-some')).to.equal('DKIM-Some');
+      expect(mb._normalizeHeaderKey('x-smtpapi')).to.equal('X-SMTPAPI');
+      expect(mb._normalizeHeaderKey('message-id')).to.equal('Message-ID');
+      expect(mb._normalizeHeaderKey('CONTENT-FEATUres')).to.equal('Content-features');
+    });
+  });
+
+  describe('#_handleContentType', function () {
+    it('should do nothing on non multipart', function () {
+      const mb = new MimeNode();
+      expect(mb.boundary).to.not.exist;
+      mb._handleContentType({
+        value: 'text/plain'
+      });
+      expect(mb.boundary).to.be.false;
+      expect(mb.multipart).to.be.false;
     });
 
-    describe('#_normalizeHeaderKey', function () {
-        it('should normalize header key', function () {
-            let mb = new MimeNode();
-
-            expect(mb._normalizeHeaderKey('key')).to.equal('Key');
-            expect(mb._normalizeHeaderKey('mime-vERSION')).to.equal('MIME-Version');
-            expect(mb._normalizeHeaderKey('-a-long-name')).to.equal('-A-Long-Name');
-            expect(mb._normalizeHeaderKey('some-spf')).to.equal('Some-SPF');
-            expect(mb._normalizeHeaderKey('dkim-some')).to.equal('DKIM-Some');
-            expect(mb._normalizeHeaderKey('x-smtpapi')).to.equal('X-SMTPAPI');
-            expect(mb._normalizeHeaderKey('message-id')).to.equal('Message-ID');
-            expect(mb._normalizeHeaderKey('CONTENT-FEATUres')).to.equal('Content-features');
-        });
+    it('should use provided boundary', function () {
+      const mb = new MimeNode();
+      expect(mb.boundary).to.not.exist;
+      mb._handleContentType({
+        value: 'multipart/mixed',
+        params: {
+          boundary: 'abc'
+        }
+      });
+      expect(mb.boundary).to.equal('abc');
+      expect(mb.multipart).to.equal('mixed');
     });
 
-    describe('#_handleContentType', function () {
-        it('should do nothing on non multipart', function () {
-            let mb = new MimeNode();
-            expect(mb.boundary).to.not.exist;
-            mb._handleContentType({
-                value: 'text/plain'
-            });
-            expect(mb.boundary).to.be.false;
-            expect(mb.multipart).to.be.false;
-        });
+    it('should generate boundary', function () {
+      const mb = new MimeNode();
+      sinon.stub(mb, '_generateBoundary').returns('def');
 
-        it('should use provided boundary', function () {
-            let mb = new MimeNode();
-            expect(mb.boundary).to.not.exist;
-            mb._handleContentType({
-                value: 'multipart/mixed',
-                params: {
-                    boundary: 'abc'
-                }
-            });
-            expect(mb.boundary).to.equal('abc');
-            expect(mb.multipart).to.equal('mixed');
-        });
+      expect(mb.boundary).to.not.exist;
+      mb._handleContentType({
+        value: 'multipart/mixed',
+        params: {}
+      });
+      expect(mb.boundary).to.equal('def');
+      expect(mb.multipart).to.equal('mixed');
 
-        it('should generate boundary', function () {
-            let mb = new MimeNode();
-            sinon.stub(mb, '_generateBoundary').returns('def');
+      mb._generateBoundary.restore();
+    });
+  });
 
-            expect(mb.boundary).to.not.exist;
-            mb._handleContentType({
-                value: 'multipart/mixed',
-                params: {}
-            });
-            expect(mb.boundary).to.equal('def');
-            expect(mb.multipart).to.equal('mixed');
+  describe('#_generateBoundary ', function () {
+    it('should genereate boundary string', function () {
+      const mb = new MimeNode();
+      mb._nodeId = 'abc';
+      mb.rootNode.baseBoundary = 'def';
+      expect(mb._generateBoundary()).to.equal('--_NmP-def-Part_abc');
+    });
+  });
 
-            mb._generateBoundary.restore();
-        });
+  describe('#_encodeHeaderValue', function () {
+    it('should do noting if possible', function () {
+      const mb = new MimeNode();
+      expect(mb._encodeHeaderValue('x-my', 'test value')).to.equal('test value');
     });
 
-    describe('#_generateBoundary ', function () {
-        it('should genereate boundary string', function () {
-            let mb = new MimeNode();
-            mb._nodeId = 'abc';
-            mb.rootNode.baseBoundary = 'def';
-            expect(mb._generateBoundary()).to.equal('--_NmP-def-Part_abc');
-        });
+    it('should encode non ascii characters', function () {
+      const mb = new MimeNode();
+      expect(mb._encodeHeaderValue('x-my', 'test jõgeva value')).to.equal('test =?UTF-8?Q?j=C3=B5geva?= value');
     });
 
-    describe('#_encodeHeaderValue', function () {
-        it('should do noting if possible', function () {
-            let mb = new MimeNode();
-            expect(mb._encodeHeaderValue('x-my', 'test value')).to.equal('test value');
-        });
-
-        it('should encode non ascii characters', function () {
-            let mb = new MimeNode();
-            expect(mb._encodeHeaderValue('x-my', 'test jõgeva value')).to.equal('test =?UTF-8?Q?j=C3=B5geva?= value');
-        });
-
-        it('should format references', function () {
-            let mb = new MimeNode();
-            expect(mb._encodeHeaderValue('references', 'abc def')).to.equal('<abc> <def>');
-            expect(mb._encodeHeaderValue('references', ['abc', 'def'])).to.equal('<abc> <def>');
-        });
-
-        it('should format message-id', function () {
-            let mb = new MimeNode();
-            expect(mb._encodeHeaderValue('message-id', 'abc')).to.equal('<abc>');
-        });
-
-        it('should format addresses', function () {
-            let mb = new MimeNode();
-            expect(mb._encodeHeaderValue('from', {
-                name: 'the safewithme testuser',
-                address: 'safewithme.testuser@jõgeva.com'
-            })).to.equal('the safewithme testuser <safewithme.testuser@xn--jgeva-dua.com>');
-        });
+    it('should format references', function () {
+      const mb = new MimeNode();
+      expect(mb._encodeHeaderValue('references', 'abc def')).to.equal('<abc> <def>');
+      expect(mb._encodeHeaderValue('references', ['abc', 'def'])).to.equal('<abc> <def>');
     });
 
-    describe('#_convertAddresses', function () {
-        it('should convert address object to a string', function () {
-            let mb = new MimeNode();
-            expect(mb._convertAddresses([{
-                name: 'Jõgeva Ants',
-                address: 'ants@jõgeva.ee'
-            }, {
-                name: 'Composers',
-                group: [{
-                    address: 'sebu@example.com',
-                    name: 'Bach, Sebastian'
-                }, {
-                    address: 'mozart@example.com',
-                    name: 'Mozzie'
-                }]
-            }])).to.equal('=?UTF-8?Q?J=C3=B5geva_Ants?= <ants@xn--jgeva-dua.ee>, Composers:"Bach, Sebastian" <sebu@example.com>, Mozzie <mozart@example.com>;');
-        });
-
-        it('should keep ascii name as is', function () {
-            let mb = new MimeNode();
-            expect(mb._convertAddresses([{
-                name: 'O\'Vigala Sass',
-                address: 'a@b.c'
-            }])).to.equal('O\'Vigala Sass <a@b.c>');
-        });
-
-        it('should include name in quotes for special symbols', function () {
-            let mb = new MimeNode();
-            expect(mb._convertAddresses([{
-                name: 'Sass, Vigala',
-                address: 'a@b.c'
-            }])).to.equal('"Sass, Vigala" <a@b.c>');
-        });
-
-        it('should escape quotes', function () {
-            let mb = new MimeNode();
-            expect(mb._convertAddresses([{
-                name: '"Vigala Sass"',
-                address: 'a@b.c'
-            }])).to.equal('"\\"Vigala Sass\\"" <a@b.c>');
-        });
-
-        it('should mime encode unicode names', function () {
-            let mb = new MimeNode();
-            expect(mb._convertAddresses([{
-                name: '"Jõgeva Sass"',
-                address: 'a@b.c'
-            }])).to.equal('=?UTF-8?Q?=22J=C3=B5geva_Sass=22?= <a@b.c>');
-        });
+    it('should format message-id', function () {
+      const mb = new MimeNode();
+      expect(mb._encodeHeaderValue('message-id', 'abc')).to.equal('<abc>');
     });
 
-    describe('#_generateMessageId', function () {
-        it('should generate uuid-looking message-id', function () {
-            let mb = new MimeNode();
-            let mid = mb._generateMessageId();
-            expect(/^<[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}@.*>/.test(mid)).to.be.true;
-        });
+    it('should format addresses', function () {
+      const mb = new MimeNode();
+      expect(mb._encodeHeaderValue('from', {
+        name: 'the safewithme testuser',
+        address: 'safewithme.testuser@jõgeva.com'
+      })).to.equal('the safewithme testuser <safewithme.testuser@xn--jgeva-dua.com>');
+    });
+  });
+
+  describe('#_convertAddresses', function () {
+    it('should convert address object to a string', function () {
+      const mb = new MimeNode();
+      expect(mb._convertAddresses([{
+        name: 'Jõgeva Ants',
+        address: 'ants@jõgeva.ee'
+      }, {
+        name: 'Composers',
+        group: [{
+          address: 'sebu@example.com',
+          name: 'Bach, Sebastian'
+        }, {
+          address: 'mozart@example.com',
+          name: 'Mozzie'
+        }]
+      }])).to.equal('=?UTF-8?Q?J=C3=B5geva_Ants?= <ants@xn--jgeva-dua.ee>, Composers:"Bach, Sebastian" <sebu@example.com>, Mozzie <mozart@example.com>;');
     });
 
-    describe('Attachment streaming', function () {
-        let port = 10337;
-        let server;
+    it('should keep ascii name as is', function () {
+      const mb = new MimeNode();
+      expect(mb._convertAddresses([{
+        name: 'O\'Vigala Sass',
+        address: 'a@b.c'
+      }])).to.equal('O\'Vigala Sass <a@b.c>');
+    });
 
-        beforeEach(function (done) {
-            server = http.createServer(function (req, res) {
-                res.writeHead(200, {
-                    'Content-Type': 'text/plain'
-                });
-                let data = new Buffer(new Array(1024 + 1).join('ä'), 'utf-8');
-                let i = 0;
-                let sendByte = function () {
-                    if (i >= data.length) {
-                        return res.end();
-                    }
-                    res.write(new Buffer([data[i++]]));
-                    setImmediate(sendByte);
-                };
+    it('should include name in quotes for special symbols', function () {
+      const mb = new MimeNode();
+      expect(mb._convertAddresses([{
+        name: 'Sass, Vigala',
+        address: 'a@b.c'
+      }])).to.equal('"Sass, Vigala" <a@b.c>');
+    });
 
-                sendByte();
-            });
+    it('should escape quotes', function () {
+      const mb = new MimeNode();
+      expect(mb._convertAddresses([{
+        name: '"Vigala Sass"',
+        address: 'a@b.c'
+      }])).to.equal('"\\"Vigala Sass\\"" <a@b.c>');
+    });
 
-            server.listen(port, done);
+    it('should mime encode unicode names', function () {
+      const mb = new MimeNode();
+      expect(mb._convertAddresses([{
+        name: '"Jõgeva Sass"',
+        address: 'a@b.c'
+      }])).to.equal('=?UTF-8?Q?=22J=C3=B5geva_Sass=22?= <a@b.c>');
+    });
+  });
+
+  describe('#_generateMessageId', function () {
+    it('should generate uuid-looking message-id', function () {
+      const mb = new MimeNode();
+      const mid = mb._generateMessageId();
+      expect(/^<[0-9a-f]{8}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{4}\-[0-9a-f]{12}@.*>/.test(mid)).to.be.true;
+    });
+  });
+
+  describe('Attachment streaming', function () {
+    const port = 10337;
+    let server;
+
+    beforeEach(function (done) {
+      server = http.createServer(function (req, res) {
+        res.writeHead(200, {
+          'Content-Type': 'text/plain'
         });
+        const data = new Buffer(new Array(1024 + 1).join('ä'), 'utf-8');
+        let i = 0;
+        const sendByte = function () {
+          if (i >= data.length) {
+            return res.end();
+          }
+          res.write(new Buffer([data[i++]]));
+          setImmediate(sendByte);
+        };
 
-        afterEach(function (done) {
-            server.close(done);
-        });
+        sendByte();
+      });
 
-        it('should pipe URL as an attachment', function (done) {
-            let mb = new MimeNode('text/plain').
+      server.listen(port, done);
+    });
+
+    afterEach(function (done) {
+      server.close(done);
+    });
+
+    it('should pipe URL as an attachment', function (done) {
+      const mb = new MimeNode('text/plain').
             setContent({
-                href: 'http://localhost:' + port
+              href: 'http://localhost:' + port
             });
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/^=C3=A4/m.test(msg)).to.be.true;
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/^=C3=A4/m.test(msg)).to.be.true;
+        done();
+      });
+    });
 
-        it('should reject URL attachment', function (done) {
-            let mb = new MimeNode('text/plain', {
-                disableUrlAccess: true
-            }).
+    it('should reject URL attachment', function (done) {
+      const mb = new MimeNode('text/plain', {
+        disableUrlAccess: true
+      }).
             setContent({
-                href: 'http://localhost:' + port
+              href: 'http://localhost:' + port
             });
 
-            mb.build(function (err, msg) {
-                expect(err).to.exist;
-                expect(msg).to.not.exist;
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.exist;
+        expect(msg).to.not.exist;
+        done();
+      });
+    });
 
-        it('should return an error on invalid url', function (done) {
-            let mb = new MimeNode('text/plain').
+    it('should return an error on invalid url', function (done) {
+      const mb = new MimeNode('text/plain').
             setContent({
-                href: 'http://__should_not_exist:58888'
+              href: 'http://__should_not_exist:58888'
             });
 
-            mb.build(function (err) {
-                expect(err).to.exist;
-                done();
-            });
-        });
+      mb.build(function (err) {
+        expect(err).to.exist;
+        done();
+      });
+    });
 
-        it('should pipe file as an attachment', function (done) {
-            let mb = new MimeNode('application/octet-stream').
+    it('should pipe file as an attachment', function (done) {
+      const mb = new MimeNode('application/octet-stream').
             setContent({
-                path: __dirname + '/fixtures/attachment.bin'
+              path: __dirname + '/fixtures/attachment.bin'
             });
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(/^w7VrdmEK$/m.test(msg)).to.be.true;
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(/^w7VrdmEK$/m.test(msg)).to.be.true;
+        done();
+      });
+    });
 
-        it('should reject file as an attachment', function (done) {
-            let mb = new MimeNode('application/octet-stream', {
-                disableFileAccess: true
-            }).
+    it('should reject file as an attachment', function (done) {
+      const mb = new MimeNode('application/octet-stream', {
+        disableFileAccess: true
+      }).
             setContent({
-                path: __dirname + '/fixtures/attachment.bin'
+              path: __dirname + '/fixtures/attachment.bin'
             });
 
-            mb.build(function (err, msg) {
-                expect(err).to.exist;
-                expect(msg).to.not.exist;
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.exist;
+        expect(msg).to.not.exist;
+        done();
+      });
+    });
 
-        it('should return an error on invalid file path', function (done) {
-            let mb = new MimeNode('text/plain').
+    it('should return an error on invalid file path', function (done) {
+      const mb = new MimeNode('text/plain').
             setContent({
-                href: '/ASfsdfsdf/Sdgsgdfg/SDFgdfgdfg'
+              href: '/ASfsdfsdf/Sdgsgdfg/SDFgdfgdfg'
             });
 
-            mb.build(function (err) {
-                expect(err).to.exist;
-                done();
-            });
-        });
+      mb.build(function (err) {
+        expect(err).to.exist;
+        done();
+      });
+    });
 
-        it('should return a error for an errored stream', function (done) {
-            let s = new PassThrough();
-            let mb = new MimeNode('text/plain').
+    it('should return a error for an errored stream', function (done) {
+      const s = new PassThrough();
+      const mb = new MimeNode('text/plain').
             setContent(s);
 
-            s.write('abc');
-            s.emit('error', new Error('Stream error'));
+      s.write('abc');
+      s.emit('error', new Error('Stream error'));
 
-            setTimeout(function () {
-                mb.build(function (err) {
-                    expect(err).to.exist;
-                    done();
-                });
-            }, 100);
+      setTimeout(function () {
+        mb.build(function (err) {
+          expect(err).to.exist;
+          done();
         });
-
-        it('should return a stream error', function (done) {
-            let s = new PassThrough();
-            let mb = new MimeNode('text/plain').
-            setContent(s);
-
-            mb.build(function (err) {
-                expect(err).to.exist;
-                done();
-            });
-
-            s.write('abc');
-            setTimeout(function () {
-                s.emit('error', new Error('Stream error'));
-            }, 100);
-        });
+      }, 100);
     });
 
-    describe('#transform', function () {
-        it('should pipe through provided stream', function (done) {
-            let mb = new MimeNode('text/plain').
+    it('should return a stream error', function (done) {
+      const s = new PassThrough();
+      const mb = new MimeNode('text/plain').
+            setContent(s);
+
+      mb.build(function (err) {
+        expect(err).to.exist;
+        done();
+      });
+
+      s.write('abc');
+      setTimeout(function () {
+        s.emit('error', new Error('Stream error'));
+      }, 100);
+    });
+  });
+
+  describe('#transform', function () {
+    it('should pipe through provided stream', function (done) {
+      const mb = new MimeNode('text/plain').
             setHeader({
-                date: '12345',
-                'message-id': '67890'
+              'date': '12345',
+              'message-id': '67890'
             }).
             setContent('Hello world!');
 
-            let expected = 'Content-Type:\ttext/plain\r\n' +
+      const expected = 'Content-Type:\ttext/plain\r\n' +
                 'Date:\t12345\r\n' +
                 'Message-ID:\t<67890>\r\n' +
                 'Content-Transfer-Encoding:\t7bit\r\n' +
@@ -1296,41 +1295,41 @@ describe('MimeNode Tests', function () {
                 'Hello\tworld!\r\n';
 
             // Transform stream that replaces all spaces with tabs
-            let transform = new Transform();
-            transform._transform = function (chunk, encoding, done) {
-                if (encoding !== 'buffer') {
-                    chunk = new Buffer(chunk, encoding);
-                }
-                for (let i = 0, len = chunk.length; i < len; i++) {
-                    if (chunk[i] === 0x20) {
-                        chunk[i] = 0x09;
-                    }
-                }
-                this.push(chunk);
-                done();
-            };
+      const transform = new Transform();
+      transform._transform = function (chunk, encoding, done) {
+        if (encoding !== 'buffer') {
+          chunk = new Buffer(chunk, encoding);
+        }
+        for (let i = 0, len = chunk.length; i < len; i++) {
+          if (chunk[i] === 0x20) {
+            chunk[i] = 0x09;
+          }
+        }
+        this.push(chunk);
+        done();
+      };
 
-            mb.transform(transform);
+      mb.transform(transform);
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(msg).to.equal(expected);
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(msg).to.equal(expected);
+        done();
+      });
     });
+  });
 
-    describe('#processFunc', function () {
-        it('should pipe through provided process function', function (done) {
-            let mb = new MimeNode('text/plain').
+  describe('#processFunc', function () {
+    it('should pipe through provided process function', function (done) {
+      const mb = new MimeNode('text/plain').
             setHeader({
-                date: '12345',
-                'message-id': '67890'
+              'date': '12345',
+              'message-id': '67890'
             }).
             setContent('Hello world!');
 
-            let expected = 'Content-Type:\ttext/plain\r\n' +
+      const expected = 'Content-Type:\ttext/plain\r\n' +
                 'Date:\t12345\r\n' +
                 'Message-ID:\t<67890>\r\n' +
                 'Content-Transfer-Encoding:\t7bit\r\n' +
@@ -1339,63 +1338,63 @@ describe('MimeNode Tests', function () {
                 'Hello\tworld!\r\n';
 
             // Transform stream that replaces all spaces with tabs
-            let transform = new Transform();
-            transform._transform = function (chunk, encoding, done) {
-                if (encoding !== 'buffer') {
-                    chunk = new Buffer(chunk, encoding);
-                }
-                for (let i = 0, len = chunk.length; i < len; i++) {
-                    if (chunk[i] === 0x20) {
-                        chunk[i] = 0x09;
-                    }
-                }
-                this.push(chunk);
-                done();
-            };
+      const transform = new Transform();
+      transform._transform = function (chunk, encoding, done) {
+        if (encoding !== 'buffer') {
+          chunk = new Buffer(chunk, encoding);
+        }
+        for (let i = 0, len = chunk.length; i < len; i++) {
+          if (chunk[i] === 0x20) {
+            chunk[i] = 0x09;
+          }
+        }
+        this.push(chunk);
+        done();
+      };
 
-            mb.processFunc(input => {
-                setImmediate(() => input.pipe(transform));
-                return transform;
-            });
+      mb.processFunc(input => {
+        setImmediate(() => input.pipe(transform));
+        return transform;
+      });
 
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(msg).to.equal(expected);
-                done();
-            });
-        });
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(msg).to.equal(expected);
+        done();
+      });
+    });
+  });
+
+
+  describe('Raw content', function () {
+    it('should return pregenerated content', function (done) {
+      const expected = new Array(100).join('Test\n');
+      const mb = new MimeNode('text/plain').setRaw(expected);
+
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(msg).to.equal(expected);
+        done();
+      });
     });
 
+    it('should return pregenerated content for a child node', function (done) {
+      const expected = new Array(100).join('Test\n');
+      const mb = new MimeNode('multipart/mixed', {
+        baseBoundary: 'test'
+      }).setHeader({
+        'date': '12345',
+        'message-id': '67890'
+      });
+      const child = mb.createChild();
+      child.setRaw(expected);
 
-    describe('Raw content', function () {
-        it('should return pregenerated content', function (done) {
-            let expected = new Array(100).join('Test\n');
-            let mb = new MimeNode('text/plain').setRaw(expected);
-
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(msg).to.equal(expected);
-                done();
-            });
-        });
-
-        it('should return pregenerated content for a child node', function (done) {
-            let expected = new Array(100).join('Test\n');
-            let mb = new MimeNode('multipart/mixed', {
-                baseBoundary: 'test'
-            }).setHeader({
-                date: '12345',
-                'message-id': '67890'
-            });
-            let child = mb.createChild();
-            child.setRaw(expected);
-
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(msg).to.equal('Content-Type: multipart/mixed; boundary="--_NmP-test-Part_1"\r\n' +
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(msg).to.equal('Content-Type: multipart/mixed; boundary="--_NmP-test-Part_1"\r\n' +
                     'Date: 12345\r\n' +
                     'Message-ID: <67890>\r\n' +
                     'MIME-Version: 1.0\r\n' +
@@ -1404,51 +1403,51 @@ describe('MimeNode Tests', function () {
                     expected +
                     '\r\n' +
                     '----_NmP-test-Part_1--\r\n');
-                done();
-            });
-        });
-
-        it('should return pregenerated content from a stream', function (done) {
-            let expected = new Array(100).join('Test\n');
-            let raw = new PassThrough();
-            let mb = new MimeNode('text/plain').setRaw(raw);
-
-            setImmediate(function () {
-                raw.end(expected);
-            });
-
-            mb.build(function (err, msg) {
-                expect(err).to.not.exist;
-                msg = msg.toString();
-                expect(msg).to.equal(expected);
-                done();
-            });
-        });
-
-        it('should catch error from a raw stream 1', function (done) {
-            let raw = new PassThrough();
-            let mb = new MimeNode('text/plain').setRaw(raw);
-
-            raw.emit('error', new Error('Stream error'));
-
-            mb.build(function (err) {
-                expect(err).to.exist;
-                done();
-            });
-        });
-
-        it('should catch error from a raw stream 2', function (done) {
-            let raw = new PassThrough();
-            let mb = new MimeNode('text/plain').setRaw(raw);
-
-            mb.build(function (err) {
-                expect(err).to.exist;
-                done();
-            });
-
-            setImmediate(function () {
-                raw.emit('error', new Error('Stream error'));
-            });
-        });
+        done();
+      });
     });
+
+    it('should return pregenerated content from a stream', function (done) {
+      const expected = new Array(100).join('Test\n');
+      const raw = new PassThrough();
+      const mb = new MimeNode('text/plain').setRaw(raw);
+
+      setImmediate(function () {
+        raw.end(expected);
+      });
+
+      mb.build(function (err, msg) {
+        expect(err).to.not.exist;
+        msg = msg.toString();
+        expect(msg).to.equal(expected);
+        done();
+      });
+    });
+
+    it('should catch error from a raw stream 1', function (done) {
+      const raw = new PassThrough();
+      const mb = new MimeNode('text/plain').setRaw(raw);
+
+      raw.emit('error', new Error('Stream error'));
+
+      mb.build(function (err) {
+        expect(err).to.exist;
+        done();
+      });
+    });
+
+    it('should catch error from a raw stream 2', function (done) {
+      const raw = new PassThrough();
+      const mb = new MimeNode('text/plain').setRaw(raw);
+
+      mb.build(function (err) {
+        expect(err).to.exist;
+        done();
+      });
+
+      setImmediate(function () {
+        raw.emit('error', new Error('Stream error'));
+      });
+    });
+  });
 });

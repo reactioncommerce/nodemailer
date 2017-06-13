@@ -1,7 +1,6 @@
 /* eslint no-unused-expressions:0, prefer-arrow-callback: 0 */
 /* globals beforeEach, describe, it */
 
-'use strict';
 
 const http = require('http');
 const proxy = require('proxy');
@@ -17,76 +16,76 @@ const TARGET_PORT = 3129;
 
 describe('HTTP Proxy Client Tests', function () {
 
-    it('should connect to a socket through proxy', function (done) {
+  it('should connect to a socket through proxy', function (done) {
 
-        let smtpServer = new SMTPServer({
-            logger: false
-        });
-
-        smtpServer.listen(TARGET_PORT, () => {
-            let proxyServer = proxy(http.createServer());
-            proxyServer.listen(PROXY_PORT, () => {
-                httpProxyClient('http://localhost:' + PROXY_PORT, TARGET_PORT, '127.0.0.1', (err, socket) => {
-                    expect(err).to.not.exist;
-                    socket.once('data', chunk => {
-                        expect(/^220[ \-]/.test(chunk.toString())).to.equal.true;
-                        socket.end();
-                        socket.on('close', () => {
-                            socket.destroy();
-                            smtpServer.close(() => setImmediate(done) && proxyServer.close());
-                        });
-                    });
-                });
-            });
-        });
-    });
-    it('should connect to a socket through proxy with auth', function (done) {
-
-        let smtpServer = new SMTPServer({
-            logger: false
-        });
-
-        smtpServer.listen(TARGET_PORT, () => {
-            let proxyServer = proxy(http.createServer());
-            proxyServer.authenticate = (req, cb) => {
-                cb(null, req.headers['proxy-authorization'] === 'Basic dGVzdDpwZXN0');
-            };
-            proxyServer.listen(PROXY_PORT, () => {
-                httpProxyClient('http://test:pest@localhost:' + PROXY_PORT, TARGET_PORT, '127.0.0.1', (err, socket) => {
-                    expect(err).to.not.exist;
-                    socket.once('data', chunk => {
-                        expect(/^220[ \-]/.test(chunk.toString())).to.equal.true;
-                        socket.end();
-                        socket.on('close', () => {
-                            socket.destroy();
-                            smtpServer.close(() => setImmediate(done) && proxyServer.close());
-                        });
-                    });
-                });
-            });
-        });
+    const smtpServer = new SMTPServer({
+      logger: false
     });
 
-    it('should should fail auth', function (done) {
-
-        let smtpServer = new SMTPServer({
-            logger: false
-        });
-
-        smtpServer.listen(TARGET_PORT, () => {
-            let proxyServer = proxy(http.createServer());
-            proxyServer.authenticate = (req, cb) => {
-                cb(null, req.headers['proxy-authorization'] === 'Basic dGVzdDpwZXN0');
-            };
-            proxyServer.listen(PROXY_PORT, () => {
-                httpProxyClient('http://test:kest@localhost:' + PROXY_PORT, TARGET_PORT, '127.0.0.1', (err, socket) => {
-                    expect(err).to.exist;
-                    expect(socket).to.not.exist;
-
-                    smtpServer.close(() => setImmediate(done) && proxyServer.close());
-                });
+    smtpServer.listen(TARGET_PORT, () => {
+      const proxyServer = proxy(http.createServer());
+      proxyServer.listen(PROXY_PORT, () => {
+        httpProxyClient('http://localhost:' + PROXY_PORT, TARGET_PORT, '127.0.0.1', (err, socket) => {
+          expect(err).to.not.exist;
+          socket.once('data', chunk => {
+            expect(/^220[ \-]/.test(chunk.toString())).to.equal.true;
+            socket.end();
+            socket.on('close', () => {
+              socket.destroy();
+              smtpServer.close(() => setImmediate(done) && proxyServer.close());
             });
+          });
         });
+      });
     });
+  });
+  it('should connect to a socket through proxy with auth', function (done) {
+
+    const smtpServer = new SMTPServer({
+      logger: false
+    });
+
+    smtpServer.listen(TARGET_PORT, () => {
+      const proxyServer = proxy(http.createServer());
+      proxyServer.authenticate = (req, cb) => {
+        cb(null, req.headers['proxy-authorization'] === 'Basic dGVzdDpwZXN0');
+      };
+      proxyServer.listen(PROXY_PORT, () => {
+        httpProxyClient('http://test:pest@localhost:' + PROXY_PORT, TARGET_PORT, '127.0.0.1', (err, socket) => {
+          expect(err).to.not.exist;
+          socket.once('data', chunk => {
+            expect(/^220[ \-]/.test(chunk.toString())).to.equal.true;
+            socket.end();
+            socket.on('close', () => {
+              socket.destroy();
+              smtpServer.close(() => setImmediate(done) && proxyServer.close());
+            });
+          });
+        });
+      });
+    });
+  });
+
+  it('should should fail auth', function (done) {
+
+    const smtpServer = new SMTPServer({
+      logger: false
+    });
+
+    smtpServer.listen(TARGET_PORT, () => {
+      const proxyServer = proxy(http.createServer());
+      proxyServer.authenticate = (req, cb) => {
+        cb(null, req.headers['proxy-authorization'] === 'Basic dGVzdDpwZXN0');
+      };
+      proxyServer.listen(PROXY_PORT, () => {
+        httpProxyClient('http://test:kest@localhost:' + PROXY_PORT, TARGET_PORT, '127.0.0.1', (err, socket) => {
+          expect(err).to.exist;
+          expect(socket).to.not.exist;
+
+          smtpServer.close(() => setImmediate(done) && proxyServer.close());
+        });
+      });
+    });
+  });
 
 });
