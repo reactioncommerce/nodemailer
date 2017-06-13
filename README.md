@@ -1,5 +1,7 @@
 # Nodemailer
 
+[![CircleCI](https://circleci.com/gh/reactioncommerce/nodemailer.svg?style=svg)](https://circleci.com/gh/reactioncommerce/nodemailer)
+
 ![Nodemailer](https://raw.githubusercontent.com/reactioncommerce/nodemailer/master/assets/nm_logo_200x136.png)
 
 This is the officially supported fork of Nodemailer that is now maintained by Reaction Commerce.
