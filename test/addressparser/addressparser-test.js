@@ -4,7 +4,7 @@
 'use strict';
 
 const chai = require('chai');
-const addressparser = require('../../lib/addressparser');
+const addressparser = require('../../dist/addressparser');
 const expect = chai.expect;
 
 chai.config.includeStack = true;

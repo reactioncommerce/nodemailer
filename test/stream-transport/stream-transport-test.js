@@ -6,7 +6,7 @@
 const chai = require('chai');
 const expect = chai.expect;
 const PassThrough = require('stream').PassThrough;
-const StreamTransport = require('../../lib/stream-transport');
+const StreamTransport = require('../../dist/stream-transport');
 chai.config.includeStack = true;
 
 class MockBuilder {

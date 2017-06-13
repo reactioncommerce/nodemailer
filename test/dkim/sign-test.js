@@ -6,7 +6,7 @@
 const chai = require('chai');
 const expect = chai.expect;
 
-let sign = require('../../lib/dkim/sign');
+let sign = require('../../dist/dkim/sign');
 
 chai.config.includeStack = true;
 

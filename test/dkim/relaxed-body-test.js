@@ -7,7 +7,7 @@ const chai = require('chai');
 const expect = chai.expect;
 
 let fs = require('fs');
-let RelaxedBody = require('../../lib/dkim/relaxed-body');
+let RelaxedBody = require('../../dist/dkim/relaxed-body');
 
 chai.config.includeStack = true;
 

@@ -9,7 +9,7 @@ const chai = require('chai');
 const net = require('net');
 const expect = chai.expect;
 const PassThrough = require('stream').PassThrough;
-const SMTPTransport = require('../../lib/smtp-transport');
+const SMTPTransport = require('../../dist/smtp-transport');
 const SMTPServer = require('smtp-server').SMTPServer;
 chai.config.includeStack = true;
 

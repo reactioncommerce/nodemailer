@@ -5,7 +5,7 @@
 
 const chai = require('chai');
 const expect = chai.expect;
-const shared = require('../../lib/shared');
+const shared = require('../../dist/shared');
 
 const http = require('http');
 const fs = require('fs');

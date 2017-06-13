@@ -7,7 +7,7 @@ const chai = require('chai');
 const expect = chai.expect;
 
 //let http = require('http');
-const MessageParser = require('../../lib/dkim/message-parser');
+const MessageParser = require('../../dist/dkim/message-parser');
 
 chai.config.includeStack = true;
 

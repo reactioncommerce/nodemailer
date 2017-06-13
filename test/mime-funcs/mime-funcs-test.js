@@ -4,7 +4,7 @@
 'use strict';
 
 const libmime = require('libmime');
-const mimeFuncs = require('../../lib/mime-funcs');
+const mimeFuncs = require('../../dist/mime-funcs');
 const chai = require('chai');
 const expect = chai.expect;
 

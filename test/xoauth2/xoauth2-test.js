@@ -5,7 +5,7 @@
 
 const chai = require('chai');
 const expect = chai.expect;
-const XOAuth2 = require('../../lib/xoauth2');
+const XOAuth2 = require('../../dist/xoauth2');
 const mockServer = require('./server');
 
 chai.config.includeStack = true;

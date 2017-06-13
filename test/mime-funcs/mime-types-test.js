@@ -7,7 +7,7 @@ const chai = require('chai');
 const expect = chai.expect;
 
 //let http = require('http');
-const mimeTypes = require('../../lib/mime-funcs/mime-types.js');
+const mimeTypes = require('../../dist/mime-funcs/mime-types.js');
 
 chai.config.includeStack = true;
 

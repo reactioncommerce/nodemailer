@@ -7,7 +7,7 @@ const chai = require('chai');
 const expect = chai.expect;
 
 //let http = require('http');
-const fetch = require('../../lib/fetch');
+const fetch = require('../../dist/fetch');
 const http = require('http');
 const https = require('https');
 const zlib = require('zlib');

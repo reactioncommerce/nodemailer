@@ -3,7 +3,7 @@
 
 'use strict';
 
-const LeUnix = require('../../lib/sendmail-transport/le-unix');
+const LeUnix = require('../../dist/sendmail-transport/le-unix');
 const chai = require('chai');
 const expect = chai.expect;
 

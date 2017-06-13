@@ -4,7 +4,7 @@
 'use strict';
 
 const libbase64 = require('libbase64');
-const base64 = require('../../lib/base64');
+const base64 = require('../../dist/base64');
 const chai = require('chai');
 const expect = chai.expect;
 const crypto = require('crypto');

@@ -5,7 +5,7 @@
 
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 
-const nodemailer = require('../../lib/nodemailer');
+const nodemailer = require('../../dist/nodemailer');
 const chai = require('chai');
 const expect = chai.expect;
 chai.config.includeStack = true;

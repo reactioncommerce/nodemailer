@@ -5,7 +5,7 @@
 
 const chai = require('chai');
 const sinon = require('sinon');
-const MimeNode = require('../../lib/mime-node');
+const MimeNode = require('../../dist/mime-node');
 const http = require('http');
 const stream = require('stream');
 const Transform = stream.Transform;

@@ -5,7 +5,7 @@
 
 const chai = require('chai');
 const expect = chai.expect;
-const wellKnown = require('../../lib/well-known');
+const wellKnown = require('../../dist/well-known');
 
 chai.config.includeStack = true;
 

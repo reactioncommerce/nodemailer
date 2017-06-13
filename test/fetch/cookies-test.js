@@ -7,7 +7,7 @@ const chai = require('chai');
 const expect = chai.expect;
 
 //let http = require('http');
-const Cookies = require('../../lib/fetch/cookies');
+const Cookies = require('../../dist/fetch/cookies');
 
 chai.config.includeStack = true;
 

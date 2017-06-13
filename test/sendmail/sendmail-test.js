@@ -10,7 +10,7 @@ const expect = chai.expect;
 const PassThrough = require('stream').PassThrough;
 const EventEmitter = require('events').EventEmitter;
 const sinon = require('sinon');
-const SendmailTransport = require('../../lib/sendmail-transport');
+const SendmailTransport = require('../../dist/sendmail-transport');
 chai.config.includeStack = true;
 
 class MockBuilder {

@@ -4,7 +4,7 @@
 'use strict';
 
 const chai = require('chai');
-const MailComposer = require('../../lib/mail-composer');
+const MailComposer = require('../../dist/mail-composer');
 const sinon = require('sinon');
 const expect = chai.expect;
 

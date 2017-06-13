@@ -9,7 +9,7 @@ const path = require('path');
 const crypto = require('crypto');
 const fs = require('fs');
 const PassThrough = require('stream').PassThrough;
-const DKIM = require('../../lib/dkim');
+const DKIM = require('../../dist/dkim');
 
 chai.config.includeStack = true;
 

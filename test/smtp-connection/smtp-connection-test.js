@@ -8,13 +8,13 @@ process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
 let fs = require('fs');
 let chai = require('chai');
 let expect = chai.expect;
-let SMTPConnection = require('../../lib/smtp-connection');
+let SMTPConnection = require('../../dist/smtp-connection');
 let packageData = require('../../package.json');
 let SMTPServer = require('smtp-server').SMTPServer;
 let HttpConnectProxy = require('proxy-test-server');
 let net = require('net');
 let xoauth2Server = require('./xoauth2-mock-server');
-let XOAuth2 = require('../../lib/xoauth2');
+let XOAuth2 = require('../../dist/xoauth2');
 let sinon = require('sinon');
 
 chai.config.includeStack = true;

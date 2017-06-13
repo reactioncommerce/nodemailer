@@ -4,7 +4,7 @@
 'use strict';
 
 const libqp = require('libqp');
-const qp = require('../../lib/qp');
+const qp = require('../../dist/qp');
 const chai = require('chai');
 const expect = chai.expect;
 const crypto = require('crypto');
