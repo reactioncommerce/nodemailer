@@ -1,20 +1,16 @@
 # Nodemailer
 
-![Nodemailer](https://raw.githubusercontent.com/nodemailer/nodemailer/master/assets/nm_logo_200x136.png)
+![Nodemailer](https://raw.githubusercontent.com/reactioncommerce/nodemailer/master/assets/nm_logo_200x136.png)
 
-Send e-mails from Node.js – easy as cake! 🍰✉️
+This is the officially supported fork of Nodemailer that is now maintained by Reaction Commerce.
 
-[![NPM](https://nodei.co/npm/nodemailer.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/nodemailer/)
+Currently, the only difference from the original project is it is now compiled with Babel so Node >=6 is no longer required.
 
-See [nodemailer.com](https://nodemailer.com/) for documentation and terms.
+See [nodemailer.com](https://nodemailer.com/) for full documentation.
 
 -------
 
 ## Having an issue?
-
-#### Nodemailer throws a SyntaxError for "..."
-
-You are using older Node.js version than v6.0. Upgrade Node.js to get support for the spread operator
 
 #### I'm having issues with Gmail
 
@@ -34,4 +30,4 @@ If you are having issues with Nodemailer, then the best way to find help would b
 
 ### License
 
-Nodemailer is licensed under the **MIT license**
+Copyright © [MIT](./LICENSE)

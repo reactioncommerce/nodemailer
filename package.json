@@ -1,7 +1,7 @@
 {
-  "name": "nodemailer",
-  "version": "4.0.1",
-  "description": "Easy as cake e-mail sending from your Node.js applications",
+  "name": "@reactioncommerce/nodemailer",
+  "version": "5.0.0",
+  "description": "Easy e-mail sending from your Node.js applications",
   "main": "dist/nodemailer.js",
   "scripts": {
     "build": "rimraf ./dist && babel src -d ./dist --copy-files",
@@ -12,17 +12,22 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/nodemailer/nodemailer.git"
+    "url": "https://github.com/reactioncommerce/nodemailer.git"
   },
   "keywords": [
-    "Nodemailer"
+    "Nodemailer",
+    "Reaction",
+    "Reaction Commerce"
   ],
-  "author": "Andris Reinman",
+  "author": "Reaction Commerce",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/nodemailer/nodemailer/issues"
+    "url": "https://github.com/reactioncommerce/nodemailer/issues"
   },
-  "homepage": "https://nodemailer.com/",
+  "homepage": "https://reactioncommerce.com/",
+  "engines": {
+    "node": ">=4.0.0"
+  },
   "devDependencies": {
     "babel-eslint": "^7.2.3",
     "babel-plugin-lodash": "^3.2.11",
@@ -40,8 +45,5 @@
     "rimraf": "^2.6.1",
     "sinon": "^2.3.4",
     "smtp-server": "^3.0.1"
-  },
-  "engines": {
-    "node": ">=6.0.0"
   }
 }
