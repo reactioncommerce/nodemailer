@@ -3,7 +3,7 @@
 'use strict';
 
 const bunyan = require('bunyan');
-const nodemailer = require('../lib/nodemailer');
+const nodemailer = require('../dist/nodemailer');
 
 let logger = bunyan.createLogger({
     name: 'nodemailer'
