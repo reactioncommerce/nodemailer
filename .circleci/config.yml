@@ -1,0 +1,20 @@
+version: 2
+
+jobs:
+  build:
+    working_directory: /home/nodemailer
+
+    docker:
+      - image: node:8
+
+    steps:
+      - checkout
+
+      - run: yarn
+      - run: yarn run build
+      - run: yarn test
+
+      # publish the build (if a tagged release)
+      - deploy:
+          name: Publish to npm registry
+          command: .circleci/deploy.sh
